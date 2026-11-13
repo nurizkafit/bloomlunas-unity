@@ -3,6 +3,8 @@ using TMPro;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -46,6 +48,7 @@ namespace BloomLunas.EditorTools
                 if (!System.IO.File.Exists(path)) continue;
 
                 Scene scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
+                SetupEventSystem();
                 SetupCityHud();
                 SetupCityExtras(scene);
                 if (path.EndsWith("MulaiGame.unity")) SetupReviewModal();
@@ -389,6 +392,20 @@ namespace BloomLunas.EditorTools
             { "lemongrass_balm", "Lemongrass balm" },
             { "turmeric_salep", "Turmeric salep" }
         };
+
+        /// <summary>
+        /// Scene kota (Market, Guild, Home, Bedroom, Crafting) belum punya
+        /// EventSystem, jadi semua tombol UI tidak bisa diklik. Buat satu per scene.
+        /// </summary>
+        private static void SetupEventSystem()
+        {
+            if (Object.FindObjectOfType<EventSystem>(true) != null) return;
+
+            GameObject system = new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
+            InputSystemUIInputModule module = system.GetComponent<InputSystemUIInputModule>();
+            if (module != null) module.AssignDefaultActions();
+            Debug.Log("[Setup] EventSystem created in " + SceneManager.GetActiveScene().name);
+        }
 
         private static void SetupCityExtras(Scene scene)
         {
