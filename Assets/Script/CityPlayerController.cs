@@ -24,6 +24,8 @@ public class CityPlayerController : MonoBehaviour
         EnsureLabel();
     }
 
+    public bool IsMoving => hasTarget;
+
     public void MoveTo(Vector3 point)
     {
         point.y = transform.position.y;

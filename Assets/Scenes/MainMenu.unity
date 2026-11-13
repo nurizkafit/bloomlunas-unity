@@ -4147,6 +4147,7 @@ MonoBehaviour:
   debtValue: {fileID: 0}
   calendarValue: {fileID: 0}
   mealpackValue: {fileID: 0}
+  eventPanel: {fileID: 0}
   eventTime: {fileID: 0}
   eventTitle: {fileID: 0}
   placePanel: {fileID: 0}
@@ -4162,6 +4163,8 @@ MonoBehaviour:
   townButton: {fileID: 0}
   journalButton: {fileID: 0}
   endDayButton: {fileID: 0}
+  shortcutTownButton: {fileID: 0}
+  shortcutHomeButton: {fileID: 0}
   homeScene: ShopdanRumah
   marketScene: Market
   guildScene: Guild
@@ -4173,6 +4176,9 @@ MonoBehaviour:
   guildMinutes: 45
   outskirtMinutes: 60
   travelEnergy: 1
+  cameraRig: {fileID: 0}
+  player: {fileID: 0}
+  outskirtUI: {fileID: 0}
 --- !u!1001 &1155509504
 PrefabInstance:
   m_ObjectHideFlags: 0

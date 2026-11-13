@@ -578,6 +578,12 @@ public class PlannerBook : MonoBehaviour
         return true;
     }
 
+    /// <summary>Harga jual di market stall: 60% dari harga toko (prototype).</summary>
+    public float GetSellPrice(string itemId)
+    {
+        return Mathf.Round(GetPrice(itemId) * 0.6f * 10f) / 10f;
+    }
+
     public bool SellProduct(string productId, int units)
     {
         if (units <= 0 || coreLoop == null) return false;
@@ -587,7 +593,7 @@ public class PlannerBook : MonoBehaviour
 
         PlannerMarketItem market = GetMarketItem(productId);
         string name = market != null ? market.displayName : productId;
-        int amount = Mathf.RoundToInt(GetPrice(productId) * units);
+        int amount = Mathf.RoundToInt(GetSellPrice(productId) * units);
 
         stock.amount -= units;
         coreLoop.RecordSale(amount, units);

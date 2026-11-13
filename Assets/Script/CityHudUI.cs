@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -25,6 +26,7 @@ public class CityHudUI : MonoBehaviour
     [SerializeField] private TMP_Text mealpackValue;
 
     [Header("Panel Event (satu per hari)")]
+    [SerializeField] private GameObject eventPanel;
     [SerializeField] private TMP_Text eventTime;
     [SerializeField] private TMP_Text eventTitle;
 
@@ -47,6 +49,10 @@ public class CityHudUI : MonoBehaviour
     [SerializeField] private Button journalButton;
     [SerializeField] private Button endDayButton;
 
+    [Header("Tombol Panel Tempat (scene kota)")]
+    [SerializeField] private Button shortcutTownButton;
+    [SerializeField] private Button shortcutHomeButton;
+
     [Header("Scene Tujuan")]
     [SerializeField] private string homeScene = "ShopdanRumah";
     [SerializeField] private string marketScene = "Market";
@@ -63,10 +69,17 @@ public class CityHudUI : MonoBehaviour
     [Tooltip("Energi per perpindahan tempat.")]
     [SerializeField] private int travelEnergy = 1;
 
+    [Header("Dunia")]
+    [SerializeField] private CityCameraController cameraRig;
+    [SerializeField] private CityPlayerController player;
+    [SerializeField] private CityExploreUI outskirtUI;
+
     private string pendingScene;
     private string pendingName;
     private int pendingMinutes;
     private int pendingEnergy;
+    private bool pendingTownView;
+    private bool travelling;
     private bool wired;
 
     private static readonly string[] EventTitles =
@@ -107,6 +120,9 @@ public class CityHudUI : MonoBehaviour
     {
         if (coreLoop == null) coreLoop = CoreLoop.Instance;
         if (book == null) book = PlannerBook.Instance;
+        if (cameraRig == null) cameraRig = FindObjectOfType<CityCameraController>(true);
+        if (player == null) player = FindObjectOfType<CityPlayerController>(true);
+        if (outskirtUI == null) outskirtUI = FindObjectOfType<CityExploreUI>(true);
     }
 
     private void Wire()
@@ -128,6 +144,8 @@ public class CityHudUI : MonoBehaviour
         Wire(journalButton, OpenPlanner);
         Wire(endDayButton, EndDay);
         Wire(goButton, Go);
+        Wire(shortcutTownButton, GoToTown);
+        Wire(shortcutHomeButton, GoHome);
     }
 
     private void Wire(Button button, System.Action action)
@@ -141,8 +159,27 @@ public class CityHudUI : MonoBehaviour
     {
         if (location == null) return;
 
-        string scene = string.IsNullOrEmpty(location.TargetScene) ? location.DisplayName : location.TargetScene;
-        ShowPlace(location.DisplayName, scene, marketMinutes, "Tap Go to enter this place.");
+        int minutes = MinutesFor(location.DisplayName);
+        ShowPlace(location.DisplayName, SceneFor(location.DisplayName), minutes, "Tap Go to walk there.");
+    }
+
+    private string SceneFor(string displayName)
+    {
+        if (string.IsNullOrEmpty(displayName)) return homeScene;
+        if (displayName.Contains("House") || displayName.Contains("Home")) return homeScene;
+        if (displayName.Contains("Guild")) return guildScene;
+        if (displayName.Contains("Market")) return marketScene;
+        if (displayName.Contains("Outskirt")) return outskirtScene;
+        return homeScene;
+    }
+
+    private int MinutesFor(string displayName)
+    {
+        if (string.IsNullOrEmpty(displayName)) return marketMinutes;
+        if (displayName.Contains("Home")) return homeMinutes;
+        if (displayName.Contains("Guild")) return guildMinutes;
+        if (displayName.Contains("Outskirt")) return outskirtMinutes;
+        return marketMinutes;
     }
 
     public void ShowPlace(string displayName, string sceneName, int minutes, string detail,
@@ -152,29 +189,76 @@ public class CityHudUI : MonoBehaviour
         pendingScene = sceneName;
         pendingMinutes = Mathf.Max(0, minutes);
         pendingEnergy = energyCost >= 0 ? energyCost : travelEnergy;
+        pendingTownView = string.IsNullOrEmpty(sceneName) || displayName == "See the whole town";
 
         if (placeTitle != null) placeTitle.text = displayName;
         if (placeDetail != null)
         {
             string arrive = coreLoop != null ? ArrivalText(pendingMinutes) : "";
-            placeDetail.text = detail + "\n" + pendingMinutes + "m   -" + pendingEnergy +
-                               " energy   " + (string.IsNullOrEmpty(arrive) ? "" : "arrive " + arrive);
+            placeDetail.text = pendingTownView
+                ? detail
+                : detail + "\n" + pendingMinutes + "m   -" + pendingEnergy +
+                  " energy   " + (string.IsNullOrEmpty(arrive) ? "" : "arrive " + arrive);
         }
 
         if (placePanel != null) placePanel.SetActive(true);
+        if (cameraRig != null) cameraRig.FocusOnPoint(FocusOf(displayName), 0.6f);
     }
 
+    /// <summary>
+    /// Go: kamera mendekat ke pemain, pemain berjalan ke tempat yang dipilih,
+    /// lalu waktu/energi dipotong dan scene dimuat. City Outskirt tidak pindah
+    /// scene: panel explore yang dibuka. See the whole town hanya reset kamera.
+    /// </summary>
     private void Go()
     {
-        if (string.IsNullOrEmpty(pendingScene)) return;
+        if (string.IsNullOrEmpty(pendingScene) && !pendingTownView) return;
 
-        if (coreLoop != null && !coreLoop.SpendTime(pendingMinutes, pendingEnergy))
+        if (pendingTownView)
         {
-            if (placeDetail != null) placeDetail.text = "Not enough energy to travel. Rest first.";
+            if (placePanel != null) placePanel.SetActive(false);
+            if (cameraRig != null) cameraRig.ResetView();
+            if (eventPanel != null) eventPanel.SetActive(true);
+            if (placeListPanel != null) placeListPanel.SetActive(true);
             return;
         }
 
+        if (travelling) return;
+        StartCoroutine(TravelRoutine());
+    }
+
+    private IEnumerator TravelRoutine()
+    {
+        travelling = true;
         if (placePanel != null) placePanel.SetActive(false);
+
+        CityLocation location = FindLocation(pendingName);
+        if (player != null && location != null) player.MoveTo(location.FocusPoint);
+
+        float elapsed = 0f;
+        while (player != null && player.IsMoving && elapsed < 8f)
+        {
+            if (cameraRig != null)
+            {
+                cameraRig.FocusOnPoint(player.transform.position + Vector3.up, 0.55f);
+            }
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        if (coreLoop != null)
+        {
+            int cost = Mathf.Min(Mathf.Max(0, pendingEnergy), coreLoop.Energy);
+            coreLoop.SpendTime(pendingMinutes, cost);
+        }
+
+        travelling = false;
+
+        if (outskirtUI != null && pendingName == "City Outskirt")
+        {
+            outskirtUI.Enter();
+            yield break;
+        }
 
         if (SceneManager.GetActiveScene().name != pendingScene)
         {
@@ -184,6 +268,38 @@ public class CityHudUI : MonoBehaviour
         {
             Refresh();
         }
+    }
+
+    private CityLocation FindLocation(string displayName)
+    {
+        if (string.IsNullOrEmpty(displayName)) return null;
+
+        CityLocation[] all = FindObjectsOfType<CityLocation>(true);
+        for (int i = 0; i < all.Length; i++)
+        {
+            string name = all[i].DisplayName;
+            if (name == displayName) return all[i];
+            if (displayName.Contains("Home") && (name.Contains("Home") || name.Contains("House"))) return all[i];
+            if (displayName.Contains("Guild") && name.Contains("Guild")) return all[i];
+            if (displayName.Contains("Outskirt") && name.Contains("Outskirt")) return all[i];
+        }
+        return null;
+    }
+
+    private Vector3 FocusOf(string displayName)
+    {
+        CityLocation location = FindLocation(displayName);
+        if (location != null) return location.FocusPoint;
+        return cameraRig != null ? cameraRig.transform.position : Vector3.zero;
+    }
+
+    /// <summary>Kembali dari City Outskirt ke peta kota (panel event & tempat aktif lagi).</summary>
+    public void ReturnToHub()
+    {
+        if (placePanel != null) placePanel.SetActive(false);
+        if (eventPanel != null) eventPanel.SetActive(true);
+        if (placeListPanel != null) placeListPanel.SetActive(true);
+        if (cameraRig != null) cameraRig.ResetView();
     }
 
     private void TogglePlaceList()
@@ -216,6 +332,24 @@ public class CityHudUI : MonoBehaviour
         }
     }
 
+    private void GoToTown()
+    {
+        if (string.IsNullOrEmpty(townScene)) return;
+        if (SceneManager.GetActiveScene().name == townScene)
+        {
+            ReturnToHub();
+            return;
+        }
+        SceneManager.LoadScene(townScene);
+    }
+
+    private void GoHome()
+    {
+        if (string.IsNullOrEmpty(homeScene)) return;
+        if (SceneManager.GetActiveScene().name == homeScene) return;
+        SceneManager.LoadScene(homeScene);
+    }
+
     private void OpenPlanner()
     {
         if (string.IsNullOrEmpty(plannerScene)) return;
@@ -236,7 +370,11 @@ public class CityHudUI : MonoBehaviour
         if (goldValue != null) goldValue.text = gold + " G";
         if (debtValue != null) debtValue.text = debt + " G";
         if (calendarValue != null) calendarValue.text = "M" + month + " W" + week + " D" + day;
-        if (mealpackValue != null) mealpackValue.text = (coreLoop != null ? coreLoop.Energy : 0).ToString();
+        if (mealpackValue != null)
+        {
+            int packs = book != null ? book.GetAmount("meal_pack") : 0;
+            mealpackValue.text = packs.ToString();
+        }
 
         ShowTodayEvent();
     }

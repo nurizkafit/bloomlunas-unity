@@ -43,6 +43,11 @@ public class CityCameraController : MonoBehaviour
     private float targetPitch;
     private bool initialized;
 
+    private Vector3 initialPivot;
+    private float initialDistance;
+    private float initialYaw;
+    private float initialPitch;
+
     private void Awake()
     {
         if (worldCamera == null) worldCamera = GetComponent<Camera>();
@@ -63,6 +68,12 @@ public class CityCameraController : MonoBehaviour
         targetDistance = startDistance;
         targetYaw = Mathf.Clamp(yaw, yawMin, yawMax);
         targetPitch = Mathf.Clamp(pitch, pitchMin, pitchMax);
+
+        initialPivot = pivot;
+        initialDistance = startDistance;
+        initialYaw = targetYaw;
+        initialPitch = targetPitch;
+
         initialized = true;
         ApplyCamera();
     }
@@ -123,19 +134,30 @@ public class CityCameraController : MonoBehaviour
 
     private void FocusOn(CityLocation location)
     {
-        if (pivotTarget != null)
-        {
-            pivotTarget.position = location.FocusPoint;
-        }
-        else
-        {
-            pivot = location.FocusPoint;
-        }
-
-        targetDistance = Mathf.Clamp(startDistance * 0.65f, minDistance, maxDistance);
+        FocusOnPoint(location.FocusPoint, 0.65f);
         if (cityHud == null) cityHud = FindObjectOfType<CityHudUI>(true);
         if (cityHud != null) cityHud.SelectLocation(location);
         if (worldUI != null) worldUI.ShowLocation(location);
+    }
+
+    /// <summary>Zoom kamera ke satu titik (gedung, tempat, atau pemain).</summary>
+    public void FocusOnPoint(Vector3 point, float distanceScale)
+    {
+        if (pivotTarget != null) pivotTarget.position = point;
+        else pivot = point;
+
+        targetDistance = Mathf.Clamp(startDistance * distanceScale, minDistance, maxDistance);
+    }
+
+    /// <summary>Kembalikan kamera ke posisi saat scene pertama kali dimuat.</summary>
+    public void ResetView()
+    {
+        if (pivotTarget != null) pivotTarget.position = initialPivot;
+        else pivot = initialPivot;
+
+        targetDistance = initialDistance;
+        targetYaw = initialYaw;
+        targetPitch = initialPitch;
     }
 
     /// <summary>Dipakai UI/debug untuk mengembalikan kamera ke sudut awal (pivot tetap).</summary>

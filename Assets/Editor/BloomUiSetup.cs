@@ -47,6 +47,7 @@ namespace BloomLunas.EditorTools
 
                 Scene scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
                 SetupCityHud();
+                SetupCityExtras(scene);
                 if (path.EndsWith("MulaiGame.unity")) SetupReviewModal();
                 ApplyFonts(scene);
                 EditorSceneManager.MarkSceneDirty(scene);
@@ -336,6 +337,8 @@ namespace BloomLunas.EditorTools
 
             Set(hud, "townButton", Button(canvas, "ButtonTown"));
             Set(hud, "journalButton", Button(canvas, "ButtonJournal"));
+            Set(hud, "shortcutTownButton", Button(canvas, "PanelMarket,dll/ButtonTown"));
+            Set(hud, "shortcutHomeButton", Button(canvas, "PanelMarket,dll/ButtonHome"));
 
             string sceneName = SceneManager.GetActiveScene().name;
             if (sceneName != "MainMenu" && sceneName != "MulaiGame")
@@ -349,6 +352,409 @@ namespace BloomLunas.EditorTools
             if (camera != null) Set(camera, "cityHud", hud);
 
             Debug.Log("[Setup] CityHudUI wired in " + SceneManager.GetActiveScene().name);
+        }
+
+        // -----------------------------------------------------------------
+        // City Outskirt & Market stall
+        // -----------------------------------------------------------------
+
+        private static readonly string[,] SpotData =
+        {
+            { "beeswax_block", "Wild bee hive", "2", "90" },
+            { "ginger_fresh", "Ginger under the palms", "2", "60" },
+            { "kencur_fresh", "Kencur bed by the stream", "2", "60" },
+            { "lemongrass_fresh", "Lemongrass field", "2", "45" },
+            { "palm_sugar_block", "Old herb garden", "2", "75" },
+            { "tamarind_paste", "Tamarind tree", "2", "45" },
+            { "turmeric_fresh", "Wild turmeric patch", "2", "60" }
+        };
+
+        private static readonly string[,] BuyData =
+        {
+            { "beeswax_block", "Beeswax block" },
+            { "coconut_oil", "Coconut oil" },
+            { "ginger_fresh", "Ginger fresh" },
+            { "kencur_fresh", "Kencur fresh" },
+            { "lemongrass_fresh", "Lemongrass fresh" },
+            { "palm_sugar_block", "Palm sugar block" },
+            { "rice_grain", "Rice grain" },
+            { "tamarind_paste", "Tamarind paste" },
+            { "turmeric_fresh", "Turmeric fresh" }
+        };
+
+        private static readonly string[,] SellData =
+        {
+            { "beras_kencur", "Beras kencur" },
+            { "kunyit_asam", "Kunyit asam" },
+            { "lemongrass_balm", "Lemongrass balm" },
+            { "turmeric_salep", "Turmeric salep" }
+        };
+
+        private static void SetupCityExtras(Scene scene)
+        {
+            if (scene.name == "CityOverWorld") SetupOutskirt();
+            else if (scene.name == "Market") SetupMarketStall();
+        }
+
+        private static void SetupOutskirt()
+        {
+            Transform canvas = FindRoot("Canvas");
+            if (canvas == null) return;
+
+            Transform confirm = Find(canvas, "PanelSebelumConfirmexplore");
+            Transform gameplay = Find(confirm, "PanelCityOutskirt");
+            Transform found = Find(gameplay, "PanelYouFoundaSpot");
+            if (confirm == null || gameplay == null || found == null)
+            {
+                Debug.LogWarning("[Setup] outskirt panels not found");
+                return;
+            }
+
+            Transform herbParent = Find(gameplay, "PanelHerbsOutHere");
+            Transform basketParent = Find(gameplay, "PanelInyourBasket");
+
+            Transform herbRows = EnsureRows(herbParent, "Rows", 52f, 34f);
+            GatherSpotRow[] spots = new GatherSpotRow[SpotData.GetLength(0)];
+            for (int i = 0; i < spots.Length; i++)
+            {
+                string rowName = "Spot_" + SpotData[i, 1].Replace(" ", string.Empty);
+                GameObject row = new GameObject(rowName, typeof(RectTransform), typeof(GatherSpotRow));
+                RectTransform rect = row.GetComponent<RectTransform>();
+                rect.SetParent(herbRows, false);
+                rect.anchorMin = new Vector2(0f, 1f);
+                rect.anchorMax = new Vector2(1f, 1f);
+                rect.pivot = new Vector2(0.5f, 1f);
+                rect.sizeDelta = new Vector2(0f, 34f);
+                rect.anchoredPosition = new Vector2(0f, -i * 34f);
+
+                TMP_Text label = MakeText(row.transform, "Name", SpotData[i, 1], 20f,
+                    TextAlignmentOptions.MidlineLeft, new Vector2(0f, 0f), new Vector2(1f, 1f),
+                    new Vector2(6f, 0f), new Vector2(-70f, 0f));
+                TMP_Text time = MakeText(row.transform, "Time", "", 18f,
+                    TextAlignmentOptions.MidlineRight, new Vector2(1f, 0f), new Vector2(1f, 1f),
+                    new Vector2(-64f, 0f), new Vector2(-6f, 0f));
+
+                GatherSpotRow view = row.GetComponent<GatherSpotRow>();
+                Set(view, "nameLabel", label);
+                Set(view, "timeLabel", time);
+                SetString(view, "itemId", SpotData[i, 0]);
+                SetString(view, "itemName", SpotData[i, 1]);
+                SetInt(view, "amount", int.Parse(SpotData[i, 2]));
+                SetInt(view, "minutes", int.Parse(SpotData[i, 3]));
+                if (time != null) time.text = view.TimeText;
+                spots[i] = view;
+            }
+
+            Transform basketRows = EnsureRows(basketParent, "Rows", 52f, 30f);
+            BasketRowView[] rows = new BasketRowView[spots.Length];
+            for (int i = 0; i < spots.Length; i++)
+            {
+                GameObject row = new GameObject("Basket_" + SpotData[i, 0], typeof(RectTransform), typeof(BasketRowView));
+                RectTransform rect = row.GetComponent<RectTransform>();
+                rect.SetParent(basketRows, false);
+                rect.anchorMin = new Vector2(0f, 1f);
+                rect.anchorMax = new Vector2(1f, 1f);
+                rect.pivot = new Vector2(0.5f, 1f);
+                rect.sizeDelta = new Vector2(0f, 30f);
+                rect.anchoredPosition = new Vector2(0f, -i * 30f);
+
+                TMP_Text label = MakeText(row.transform, "Name", SpotData[i, 1], 18f,
+                    TextAlignmentOptions.MidlineLeft, Vector2.zero, Vector2.one,
+                    new Vector2(6f, 0f), new Vector2(-50f, 0f));
+                TMP_Text count = MakeText(row.transform, "Count", "x0", 18f,
+                    TextAlignmentOptions.MidlineRight, new Vector2(1f, 0f), new Vector2(1f, 1f),
+                    new Vector2(-46f, 0f), new Vector2(-6f, 0f));
+
+                BasketRowView view = row.GetComponent<BasketRowView>();
+                Set(view, "nameLabel", label);
+                Set(view, "countLabel", count);
+                SetString(view, "itemId", SpotData[i, 0]);
+                SetString(view, "itemName", SpotData[i, 1]);
+                row.SetActive(false);
+                rows[i] = view;
+            }
+
+            TMP_Text basketCount = Find(basketParent, "BasketCount")?.GetComponent<TMP_Text>();
+            if (basketCount == null)
+            {
+                basketCount = MakeText(basketParent, "BasketCount", "0/5", 18f,
+                    TextAlignmentOptions.MidlineRight, new Vector2(1f, 1f), new Vector2(1f, 1f),
+                    new Vector2(-80f, -38f), new Vector2(-10f, -12f));
+            }
+
+            TMP_Text amount = Find(found, "Amount")?.GetComponent<TMP_Text>();
+            if (amount == null)
+            {
+                amount = MakeText(found, "Amount", "", 16f, TextAlignmentOptions.TopLeft,
+                    new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(18f, -86f), new Vector2(-18f, -58f));
+            }
+
+            CityExploreUI explore = canvas.GetComponent<CityExploreUI>();
+            if (explore == null) explore = canvas.gameObject.AddComponent<CityExploreUI>();
+
+            Set(explore, "hud", canvas.GetComponent<CityHudUI>());
+            Set(explore, "cameraRig", Object.FindObjectOfType<CityCameraController>(true));
+            Set(explore, "hubEventPanel", Find(canvas, "PanelEventyangudahdipilih")?.gameObject);
+            Set(explore, "hubPlaceListPanel", Find(canvas, "PanelBuatMilihTempat")?.gameObject);
+            Set(explore, "confirmPanel", confirm.gameObject);
+            Set(explore, "gameplayPanel", gameplay.gameObject);
+            Set(explore, "foundPanel", found.gameObject);
+            Set(explore, "exploreButton", Button(confirm, "PanelBuatMilihTempat (1)/ButtonExploretheOutskirt"));
+            Set(explore, "keepWalkingButton", Button(confirm, "ButtonKeepWalking"));
+            Set(explore, "headBackButton", Button(confirm, "ButtonHeadBack"));
+            Set(explore, "townButton", Button(confirm, "PanelBuatMilihTempat (1)/ButtonTown"));
+            Set(explore, "goHomeButton", Button(confirm, "PanelBuatMilihTempat (1)/ButtonGoHome"));
+            Set(explore, "gatherButton", Button(found, "ButtonGather"));
+            Set(explore, "passByButton", Button(found, "ButtonPassby"));
+            Set(explore, "basketCountLabel", basketCount);
+            Set(explore, "foundName", Text(found, "You found a spot"));
+            Set(explore, "foundTime", Text(found, "itemyangsayadapat"));
+            Set(explore, "foundAmount", amount);
+            SetArray(explore, "spots", spots);
+            SetArray(explore, "basketRows", rows);
+
+            CityHudUI hud = canvas.GetComponent<CityHudUI>();
+            if (hud != null)
+            {
+                Set(hud, "outskirtUI", explore);
+                Set(hud, "eventPanel", Find(canvas, "PanelEventyangudahdipilih")?.gameObject);
+                Set(hud, "cameraRig", Object.FindObjectOfType<CityCameraController>(true));
+                Set(hud, "player", Object.FindObjectOfType<CityPlayerController>(true));
+            }
+
+            gameplay.gameObject.SetActive(false);
+            found.gameObject.SetActive(false);
+            confirm.gameObject.SetActive(false);
+            Debug.Log("[Setup] outskirt UI wired (" + spots.Length + " spots)");
+        }
+
+        private static void SetupMarketStall()
+        {
+            Transform canvas = FindRoot("Canvas");
+            if (canvas == null) return;
+
+            Transform stall = Find(canvas, "PanelMarketstall");
+            Transform buy = Find(stall, "PanelHerbofMaterial");
+            Transform food = Find(stall, "PanelFood");
+            Transform sell = Find(stall, "PanelSell");
+            if (stall == null || buy == null || food == null || sell == null)
+            {
+                Debug.LogWarning("[Setup] market stall panels not found");
+                return;
+            }
+
+            // Tombol -/+ tunggal lama diganti tombol per baris.
+            Transform oldMinus = Find(buy, "Button-");
+            Transform oldPlus = Find(buy, "Button+");
+            if (oldMinus != null) oldMinus.gameObject.SetActive(false);
+            if (oldPlus != null) oldPlus.gameObject.SetActive(false);
+
+            Transform buyRows = EnsureRows(buy, "Rows", 58f, 32f);
+            MarketRowView[] buys = new MarketRowView[BuyData.GetLength(0)];
+            for (int i = 0; i < buys.Length; i++)
+            {
+                buys[i] = MakeMarketRow(buyRows, "Buy_" + BuyData[i, 0], BuyData[i, 0], BuyData[i, 1], false, i);
+            }
+
+            Transform sellRows = EnsureRows(sell, "Rows", 58f, 32f);
+            MarketRowView[] sells = new MarketRowView[SellData.GetLength(0)];
+            for (int i = 0; i < sells.Length; i++)
+            {
+                sells[i] = MakeMarketRow(sellRows, "Sell_" + SellData[i, 0], SellData[i, 0], SellData[i, 1], true, i);
+            }
+
+            TMP_Text storeLeft = Find(buy, "StoreLeft")?.GetComponent<TMP_Text>();
+            if (storeLeft == null)
+            {
+                storeLeft = MakeText(buy, "StoreLeft", "Store jar left", 16f, TextAlignmentOptions.MidlineLeft,
+                    new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(16f, -34f), new Vector2(-16f, -10f));
+            }
+
+            TMP_Text personalLeft = Find(food, "PersonalLeft")?.GetComponent<TMP_Text>();
+            if (personalLeft == null)
+            {
+                personalLeft = MakeText(food, "PersonalLeft", "Personal jar left", 16f, TextAlignmentOptions.MidlineLeft,
+                    new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(16f, 10f), new Vector2(-16f, 34f));
+            }
+
+            Button close = Button(stall, "ButtonClose");
+            if (close == null) close = CreateCloseButton(stall);
+
+            MarketStallUI ui = canvas.GetComponent<MarketStallUI>();
+            if (ui == null) ui = canvas.gameObject.AddComponent<MarketStallUI>();
+
+            Set(ui, "stallPanel", stall.gameObject);
+            Set(ui, "openButton", Button(canvas, "PanelMarket,dll/ButtonMarketStall"));
+            Set(ui, "closeButton", close);
+            Set(ui, "tabBuy", Button(stall, "ButtonBuy"));
+            Set(ui, "tabFood", Button(stall, "ButtonFood"));
+            Set(ui, "tabSell", Button(stall, "ButtonSell"));
+            Set(ui, "buyPanel", buy.gameObject);
+            Set(ui, "foodPanel", food.gameObject);
+            Set(ui, "sellPanel", sell.gameObject);
+            Set(ui, "buyTotal", Text(buy, "berapabanyakuangygakandiperukan/Text (TMP)"));
+            Set(ui, "storeLeft", storeLeft);
+            Set(ui, "buyButton", Button(buy, "ButtonSell"));
+            Set(ui, "foodPlus", Button(food, "Button+"));
+            Set(ui, "foodMinus", Button(food, "Button-"));
+            Set(ui, "foodQty", Text(food, "PanelBerapabanyakaygdiberli/Berapabanyakaygdiberli"));
+            Set(ui, "foodTotal", Text(food, "butuhberapauang/Text (TMP)"));
+            Set(ui, "foodDays", Text(food, "PanelMealPack/HowMuch(DaysCovered)"));
+            Set(ui, "foodPrice", Text(food, "PanelMealPack/Price Each (1)"));
+            Set(ui, "mealpackHave", Text(food, "PanelMealPack/HowMuch(YouHave)"));
+            Set(ui, "personalLeft", personalLeft);
+            Set(ui, "foodBuyButton", Button(food, "ButtonBuyFood"));
+            Set(ui, "sellTotal", Text(sell, "berapabanyakygkitadapat/Text (TMP)"));
+            Set(ui, "sellButton", Button(sell, "ButtonSell"));
+            Set(ui, "selectAllButton", Button(sell, "ButtonSelectAll"));
+            Set(ui, "deselectAllButton", Button(sell, "ButtonDeselectAll"));
+            SetArray(ui, "buyRows", buys);
+            SetArray(ui, "sellRows", sells);
+
+            buy.gameObject.SetActive(false);
+            food.gameObject.SetActive(false);
+            sell.gameObject.SetActive(false);
+            stall.gameObject.SetActive(false);
+            Debug.Log("[Setup] market stall wired (" + buys.Length + " buy, " + sells.Length + " sell)");
+        }
+
+        private static MarketRowView MakeMarketRow(Transform parent, string name, string itemId, string label,
+            bool product, int index)
+        {
+            GameObject row = new GameObject(name, typeof(RectTransform), typeof(MarketRowView));
+            RectTransform rect = row.GetComponent<RectTransform>();
+            rect.SetParent(parent, false);
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.sizeDelta = new Vector2(0f, 32f);
+            rect.anchoredPosition = new Vector2(0f, -index * 32f);
+
+            TMP_Text nameText = MakeText(row.transform, "Name", label, 18f,
+                TextAlignmentOptions.MidlineLeft, Vector2.zero, Vector2.one,
+                new Vector2(6f, 0f), new Vector2(-204f, 0f));
+            TMP_Text eachText = MakeText(row.transform, "Each", "-", 18f,
+                TextAlignmentOptions.MidlineRight, new Vector2(1f, 0f), new Vector2(1f, 1f),
+                new Vector2(-200f, 0f), new Vector2(-150f, 0f));
+            TMP_Text haveText = MakeText(row.transform, "Have", "0", 18f,
+                TextAlignmentOptions.MidlineRight, new Vector2(1f, 0f), new Vector2(1f, 1f),
+                new Vector2(-146f, 0f), new Vector2(-106f, 0f));
+            TMP_Text qtyText = MakeText(row.transform, "Qty", "0", 18f,
+                TextAlignmentOptions.MidlineRight, new Vector2(1f, 0f), new Vector2(1f, 1f),
+                new Vector2(-102f, 0f), new Vector2(-66f, 0f));
+
+            Button minus = MakeSmallButton(row.transform, "Minus", "-", -62f);
+            Button plus = MakeSmallButton(row.transform, "Plus", "+", -30f);
+
+            MarketRowView view = row.GetComponent<MarketRowView>();
+            Set(view, "nameLabel", nameText);
+            Set(view, "eachLabel", eachText);
+            Set(view, "haveLabel", haveText);
+            Set(view, "qtyLabel", qtyText);
+            Set(view, "plusButton", plus);
+            Set(view, "minusButton", minus);
+            SetString(view, "itemId", itemId);
+            SetString(view, "itemName", label);
+            SetBool(view, "isProduct", product);
+            view.SetQty(0);
+            return view;
+        }
+
+        private static Button MakeSmallButton(Transform parent, string name, string label, float x)
+        {
+            GameObject obj = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            RectTransform rect = obj.GetComponent<RectTransform>();
+            rect.SetParent(parent, false);
+            rect.anchorMin = new Vector2(1f, 0.5f);
+            rect.anchorMax = new Vector2(1f, 0.5f);
+            rect.pivot = new Vector2(1f, 0.5f);
+            rect.sizeDelta = new Vector2(28f, 28f);
+            rect.anchoredPosition = new Vector2(x, 0f);
+
+            Image image = obj.GetComponent<Image>();
+            image.color = new Color(1f, 1f, 1f, 0.9f);
+
+            Button button = obj.GetComponent<Button>();
+            button.targetGraphic = image;
+
+            TMP_Text text = MakeText(rect, "Label", label, 20f, TextAlignmentOptions.Center,
+                Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            text.raycastTarget = false;
+            return button;
+        }
+
+        private static Button CreateCloseButton(Transform stall)
+        {
+            Button template = Button(stall, "ButtonBuy");
+            GameObject obj = new GameObject("ButtonClose", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            RectTransform rect = obj.GetComponent<RectTransform>();
+            rect.SetParent(stall, false);
+            rect.anchorMin = new Vector2(1f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(1f, 1f);
+            rect.sizeDelta = new Vector2(46f, 46f);
+            rect.anchoredPosition = new Vector2(-18f, -18f);
+
+            Image image = obj.GetComponent<Image>();
+            if (template != null && template.targetGraphic is Image templateImage)
+            {
+                image.sprite = templateImage.sprite;
+                image.type = templateImage.type;
+                image.color = templateImage.color;
+            }
+
+            Button button = obj.GetComponent<Button>();
+            button.targetGraphic = image;
+            TMP_Text text = MakeText(rect, "Label", "X", 22f, TextAlignmentOptions.Center,
+                Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            text.raycastTarget = false;
+            return button;
+        }
+
+        private static Transform EnsureRows(Transform parent, string name, float topOffset, float rowHeight)
+        {
+            if (parent == null) return null;
+
+            Transform existing = Find(parent, name);
+            if (existing != null)
+            {
+                for (int i = existing.childCount - 1; i >= 0; i--)
+                {
+                    Object.DestroyImmediate(existing.GetChild(i).gameObject);
+                }
+                return existing;
+            }
+
+            GameObject rows = new GameObject(name, typeof(RectTransform));
+            RectTransform rect = rows.GetComponent<RectTransform>();
+            rect.SetParent(parent, false);
+            rect.anchorMin = new Vector2(0f, 0f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.offsetMin = new Vector2(16f, 12f);
+            rect.offsetMax = new Vector2(-16f, -topOffset);
+            return rows.transform;
+        }
+
+        private static TMP_Text MakeText(Transform parent, string name, string value, float size,
+            TextAlignmentOptions alignment, Vector2 anchorMin, Vector2 anchorMax,
+            Vector2 offsetMin, Vector2 offsetMax)
+        {
+            GameObject obj = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
+            RectTransform rect = obj.GetComponent<RectTransform>();
+            rect.SetParent(parent, false);
+            rect.anchorMin = anchorMin;
+            rect.anchorMax = anchorMax;
+            rect.offsetMin = offsetMin;
+            rect.offsetMax = offsetMax;
+
+            TextMeshProUGUI text = obj.GetComponent<TextMeshProUGUI>();
+            text.text = value;
+            text.fontSize = size;
+            text.alignment = alignment;
+            text.color = new Color(0.24f, 0.24f, 0.2f, 1f);
+            text.raycastTarget = false;
+            ApplyFont(text);
+            return text;
         }
 
         private static Button CreateEndDayButton(Transform canvas)
@@ -504,6 +910,45 @@ namespace BloomLunas.EditorTools
                 return;
             }
             property.objectReferenceValue = value;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void SetString(Component target, string field, string value)
+        {
+            if (target == null) return;
+            SerializedObject so = new SerializedObject(target);
+            SerializedProperty property = so.FindProperty(field);
+            if (property == null) return;
+            property.stringValue = value;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void SetInt(Component target, string field, int value)
+        {
+            if (target == null) return;
+            SerializedObject so = new SerializedObject(target);
+            SerializedProperty property = so.FindProperty(field);
+            if (property == null) return;
+            property.intValue = value;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void SetArray(Component target, string field, Object[] values)
+        {
+            if (target == null) return;
+            SerializedObject so = new SerializedObject(target);
+            SerializedProperty property = so.FindProperty(field);
+            if (property == null)
+            {
+                Debug.LogWarning("[Setup] array field " + field + " not found on " + target.GetType().Name);
+                return;
+            }
+
+            property.arraySize = values.Length;
+            for (int i = 0; i < values.Length; i++)
+            {
+                property.GetArrayElementAtIndex(i).objectReferenceValue = values[i];
+            }
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 

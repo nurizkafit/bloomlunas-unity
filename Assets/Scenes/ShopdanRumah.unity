@@ -4888,6 +4888,7 @@ MonoBehaviour:
   debtValue: {fileID: 626136779}
   calendarValue: {fileID: 1509562322}
   mealpackValue: {fileID: 852143899}
+  eventPanel: {fileID: 0}
   eventTime: {fileID: 1647502288}
   eventTitle: {fileID: 805905084}
   placePanel: {fileID: 1914400999}
@@ -4903,6 +4904,8 @@ MonoBehaviour:
   townButton: {fileID: 1313149209}
   journalButton: {fileID: 1401172983}
   endDayButton: {fileID: 81663410}
+  shortcutTownButton: {fileID: 0}
+  shortcutHomeButton: {fileID: 0}
   homeScene: ShopdanRumah
   marketScene: Market
   guildScene: Guild
@@ -4914,6 +4917,9 @@ MonoBehaviour:
   guildMinutes: 45
   outskirtMinutes: 60
   travelEnergy: 1
+  cameraRig: {fileID: 0}
+  player: {fileID: 0}
+  outskirtUI: {fileID: 0}
 --- !u!1 &1261389876
 GameObject:
   m_ObjectHideFlags: 0
