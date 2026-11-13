@@ -51,6 +51,7 @@ public class DraggableCard : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
     private Vector2 originalOffsetMax;
     private Vector2 originalSizeDelta;
     private Vector2 originalSize;
+    private Vector2 originalPivot;
     private Vector3 originalLocalScale;
     private Vector2 dragOffset;
     private GameObject layoutPlaceholder;
@@ -70,6 +71,10 @@ public class DraggableCard : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         rectTransform = transform as RectTransform;
         if (canvasGroup == null) canvasGroup = GetComponent<CanvasGroup>();
         if (planner == null) planner = GetComponentInParent<PlannerBookUI>();
+
+        // Kartu di dalam kotak hari adalah salinan; kartu di dek adalah template
+        // yang tidak pernah pindah tempat.
+        isDeckTemplate = GetComponentInParent<DropSlot>() == null;
         if (titleText != null) deckTitleColor = titleText.color;
         if (subText != null) deckSubColor = subText.color;
         if (timeText != null) deckTimeColor = timeText.color;
@@ -207,6 +212,7 @@ public class DraggableCard : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
             originalSizeDelta = rectTransform.sizeDelta;
             originalSize = rectTransform.rect.size;
             originalLocalScale = rectTransform.localScale;
+            originalPivot = rectTransform.pivot;
         }
         CreateLayoutPlaceholder();
 
@@ -282,6 +288,7 @@ public class DraggableCard : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         {
             rectTransform.anchorMin = originalAnchorMin;
             rectTransform.anchorMax = originalAnchorMax;
+            rectTransform.pivot = originalPivot;
             rectTransform.offsetMin = originalOffsetMin;
             rectTransform.offsetMax = originalOffsetMax;
             rectTransform.sizeDelta = originalSizeDelta;

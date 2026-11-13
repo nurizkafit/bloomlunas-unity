@@ -4,14 +4,17 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// Kamera isometrik untuk CityOverWorld. Klik kiri memilih lokasi;
-/// klik kanan ditahan untuk pan; scroll untuk zoom.
+/// Kamera orbit untuk CityOverWorld. Kamera berputar mengelilingi satu pivot
+/// (CameraTarget), tidak bisa digeser bebas. Klik kiri memilih lokasi;
+/// klik kanan ditahan untuk memutar (yaw/pitch, dibatasi); scroll untuk zoom.
 /// </summary>
 public class CityCameraController : MonoBehaviour
 {
     [SerializeField] private Camera worldCamera;
     [SerializeField] private Transform pivotTarget;
     [SerializeField] private CityWorldUI worldUI;
+    [Tooltip("UI kota yang menampilkan panel tempat setelah gedung diklik.")]
+    [SerializeField] private CityHudUI cityHud;
 
     [Header("Gerak")]
     [SerializeField] private float yaw = 45f;
@@ -19,15 +22,25 @@ public class CityCameraController : MonoBehaviour
     [SerializeField] private float minDistance = 8f;
     [SerializeField] private float maxDistance = 24f;
     [SerializeField] private float startDistance = 17f;
-    [SerializeField] private float panSpeed = 0.08f;
     [SerializeField] private float zoomStep = 1.4f;
     [SerializeField] private float smoothTime = 0.32f;
     [SerializeField] private float zoomSmooth = 6f;
+
+    [Header("Orbit (pivot)")]
+    [Tooltip("Derajat putaran per satuan gerakan mouse saat klik kanan ditahan.")]
+    [SerializeField] private float orbitSensitivity = 0.18f;
+    [SerializeField] private float yawMin = 20f;
+    [SerializeField] private float yawMax = 70f;
+    [SerializeField] private float pitchMin = 24f;
+    [SerializeField] private float pitchMax = 60f;
+    [SerializeField] private float orbitSmooth = 10f;
 
     private Vector3 pivot;
     private Vector3 pivotVelocity;
     private float distance;
     private float targetDistance;
+    private float targetYaw;
+    private float targetPitch;
     private bool initialized;
 
     private void Awake()
@@ -48,6 +61,8 @@ public class CityCameraController : MonoBehaviour
 
         distance = startDistance;
         targetDistance = startDistance;
+        targetYaw = Mathf.Clamp(yaw, yawMin, yawMax);
+        targetPitch = Mathf.Clamp(pitch, pitchMin, pitchMax);
         initialized = true;
         ApplyCamera();
     }
@@ -59,6 +74,9 @@ public class CityCameraController : MonoBehaviour
 
         pivot = Vector3.SmoothDamp(pivot, pivotTarget != null ? pivotTarget.position : pivot,
             ref pivotVelocity, smoothTime);
+        float orbitBlend = 1f - Mathf.Exp(-orbitSmooth * Time.deltaTime);
+        yaw = Mathf.Lerp(yaw, targetYaw, orbitBlend);
+        pitch = Mathf.Lerp(pitch, targetPitch, orbitBlend);
         distance = Mathf.Lerp(distance, targetDistance, 1f - Mathf.Exp(-zoomSmooth * Time.deltaTime));
         ApplyCamera();
     }
@@ -75,23 +93,24 @@ public class CityCameraController : MonoBehaviour
         Mouse mouse = Mouse.current;
         if (mouse == null) return;
 
-        if (mouse.rightButton.isPressed)
+        bool overUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+
+        // Klik kanan ditahan = putar kamera mengelilingi pivot (bukan geser).
+        if (mouse.rightButton.isPressed && !overUI)
         {
             Vector2 delta = mouse.delta.ReadValue();
-            Vector3 right = Vector3.ProjectOnPlane(transform.right, Vector3.up).normalized;
-            Vector3 forward = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
-            Vector3 move = (-right * delta.x - forward * delta.y) * panSpeed * distance * 0.05f;
-            pivotTarget.position += move;
+            targetYaw = Mathf.Clamp(targetYaw + delta.x * orbitSensitivity, yawMin, yawMax);
+            targetPitch = Mathf.Clamp(targetPitch - delta.y * orbitSensitivity, pitchMin, pitchMax);
         }
 
         float scroll = mouse.scroll.ReadValue().y;
-        if (Mathf.Abs(scroll) > 0.01f)
+        if (Mathf.Abs(scroll) > 0.01f && !overUI)
         {
             targetDistance = Mathf.Clamp(targetDistance - scroll * zoomStep, minDistance, maxDistance);
         }
 
         if (!mouse.leftButton.wasPressedThisFrame) return;
-        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
+        if (overUI) return;
 
         Ray ray = worldCamera.ScreenPointToRay(mouse.position.ReadValue());
         RaycastHit hit;
@@ -114,6 +133,15 @@ public class CityCameraController : MonoBehaviour
         }
 
         targetDistance = Mathf.Clamp(startDistance * 0.65f, minDistance, maxDistance);
+        if (cityHud == null) cityHud = FindObjectOfType<CityHudUI>(true);
+        if (cityHud != null) cityHud.SelectLocation(location);
         if (worldUI != null) worldUI.ShowLocation(location);
+    }
+
+    /// <summary>Dipakai UI/debug untuk mengembalikan kamera ke sudut awal (pivot tetap).</summary>
+    public void ResetOrbit()
+    {
+        targetYaw = Mathf.Clamp(45f, yawMin, yawMax);
+        targetPitch = Mathf.Clamp(42f, pitchMin, pitchMax);
     }
 }

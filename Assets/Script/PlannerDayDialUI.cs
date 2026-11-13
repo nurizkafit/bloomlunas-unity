@@ -25,6 +25,7 @@ public class PlannerDayDialUI : MonoBehaviour
     [SerializeField] private TMP_Text energyText;
 
     [Header("Waktu")]
+    [Tooltip("Dipakai hanya jika CoreLoop tidak ada di scene.")]
     [Range(0, 23)] [SerializeField] private int hour = 6;
     [Range(0, 59)] [SerializeField] private int minute = 0;
     [Tooltip("Jarak ikon matahari/bulan dari pusat dial.")]
@@ -125,9 +126,18 @@ public class PlannerDayDialUI : MonoBehaviour
     {
         Resolve();
 
-        float dayProgress = Mathf.Repeat(hour + minute / 60f, 24f) / 24f;
+        // CoreLoop menyimpan jam dan energi permainan; field di Inspector hanya cadangan.
+        int shownHour = hour;
+        int shownMinute = minute;
+        if (coreLoop != null)
+        {
+            shownHour = coreLoop.Hour;
+            shownMinute = coreLoop.Minute;
+        }
+
+        float dayProgress = Mathf.Repeat(shownHour + shownMinute / 60f, 24f) / 24f;
         float angle = dayProgress * 360f;
-        float clock = hour + minute / 60f;
+        float clock = shownHour + shownMinute / 60f;
 
         if (skyDisc != null) skyDisc.color = SkyColor(clock);
 
@@ -143,8 +153,8 @@ public class PlannerDayDialUI : MonoBehaviour
                 : new Color(0.58f, 0.65f, 0.86f, 1f);
         }
 
-        int maxEnergy = book != null ? Mathf.Max(1, book.MaxEnergy) : 6;
-        int energy = book != null ? book.Energy : 0;
+        int maxEnergy = coreLoop != null ? coreLoop.MaxEnergy : (book != null ? Mathf.Max(1, book.MaxEnergy) : 6);
+        int energy = coreLoop != null ? coreLoop.Energy : (book != null ? book.Energy : 0);
         float energyFill = Mathf.Clamp01((float)energy / maxEnergy);
 
         if (energyRing != null)
@@ -166,8 +176,8 @@ public class PlannerDayDialUI : MonoBehaviour
 
         string weekday = coreLoop != null ? coreLoop.DayName : "Monday";
         if (weekdayText != null) weekdayText.text = weekday.ToUpperInvariant();
-        if (timeText != null) timeText.text = hour.ToString("00") + ":" + minute.ToString("00");
-        if (periodText != null) periodText.text = hour < 12 ? "AM" : "PM";
+        if (timeText != null) timeText.text = shownHour.ToString("00") + ":" + shownMinute.ToString("00");
+        if (periodText != null) periodText.text = shownHour < 12 ? "AM" : "PM";
         if (energyText != null) energyText.text = energy.ToString();
     }
 

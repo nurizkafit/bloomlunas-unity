@@ -90,6 +90,12 @@ public class CoreLoop : MonoBehaviour
     [SerializeField] private string planningSceneName = "MulaiGame";
     [SerializeField] private string worldSceneName = "CityOverWorld";
 
+    [Header("Jam dan Energi")]
+    [Tooltip("Jam mulai hari (24 jam). Prototype memakai 06:00.")]
+    [SerializeField, Range(0, 23)] private int startHour = 6;
+    [Tooltip("Energi maksimum per hari. Prototype memakai 6.")]
+    [SerializeField, Min(1)] private int maxEnergy = 6;
+
     [Header("Status Runtime")]
     [SerializeField] private GamePhase phase = GamePhase.MainMenu;
     [SerializeField] private int month = 1;
@@ -97,6 +103,11 @@ public class CoreLoop : MonoBehaviour
     [SerializeField] private int dayIndex;
     [SerializeField] private int gold;
     [SerializeField] private int debt;
+
+    [Header("Jam dan Energi Runtime")]
+    [Tooltip("Menit sejak 00:00. Diisi otomatis saat hari mulai.")]
+    [SerializeField] private int timeMinutes = 6 * 60;
+    [SerializeField] private int energy = 6;
 
     [SerializeField] private int monthGoldEarned;
     [SerializeField] private int monthGoldSpent;
@@ -129,6 +140,17 @@ public class CoreLoop : MonoBehaviour
     public string DayName => DayNames[Mathf.Clamp(dayIndex, 0, DayNames.Length - 1)];
     public int Gold => gold;
     public int Debt => debt;
+
+    public int TimeMinutes => timeMinutes;
+    public int Hour => Mathf.Clamp(timeMinutes / 60, 0, 23);
+    public int Minute => Mathf.Clamp(timeMinutes % 60, 0, 59);
+    public int Energy => energy;
+    public int MaxEnergy => Mathf.Max(1, maxEnergy);
+    public bool IsOutOfTime => timeMinutes >= 22 * 60;
+    public bool IsOutOfEnergy => energy <= 0;
+
+    /// <summary>Jam dalam format 06:00.</summary>
+    public string ClockText => Hour.ToString("00") + ":" + Minute.ToString("00");
 
     public int WeeksPerMonth => Mathf.Max(1, weeksPerMonth);
     public int TotalWeek => (month - 1) * WeeksPerMonth + week;
@@ -187,6 +209,39 @@ public class CoreLoop : MonoBehaviour
         month = Mathf.Max(1, month);
         gold = Mathf.Max(0, gold);
         debt = Mathf.Max(0, debt);
+        timeMinutes = Mathf.Clamp(timeMinutes, 0, 23 * 60 + 59);
+        energy = Mathf.Clamp(energy, 0, MaxEnergy);
+    }
+
+    /// <summary>Mulai hari baru: jam kembali ke startHour, energi penuh.</summary>
+    public void ResetDayClock()
+    {
+        timeMinutes = Mathf.Clamp(startHour, 0, 23) * 60;
+        energy = MaxEnergy;
+        NotifyStateChanged();
+    }
+
+    /// <summary>
+    /// Memakai waktu dan energi untuk satu aksi atau perpindahan tempat.
+    /// Mengembalikan false jika energi tidak cukup (aksi dibatalkan).
+    /// </summary>
+    public bool SpendTime(int minutes, int energyCost)
+    {
+        int cost = Mathf.Max(0, energyCost);
+        if (cost > energy) return false;
+
+        energy -= cost;
+        timeMinutes = Mathf.Clamp(timeMinutes + Mathf.Max(0, minutes), 0, 23 * 60 + 59);
+        NotifyStateChanged();
+        return true;
+    }
+
+    /// <summary>Menambah energi, misalnya setelah makan atau istirahat.</summary>
+    public void RestoreEnergy(int amount)
+    {
+        if (amount <= 0) return;
+        energy = Mathf.Clamp(energy + amount, 0, MaxEnergy);
+        NotifyStateChanged();
     }
 
     // ---------------------------------------------------------------------
@@ -204,6 +259,8 @@ public class CoreLoop : MonoBehaviour
         gold = Mathf.Max(0, startingGold);
         debt = Mathf.Max(0, startingDebt);
         lastMonthReport = null;
+        timeMinutes = Mathf.Clamp(startHour, 0, 23) * 60;
+        energy = MaxEnergy;
 
         ResetMonthStats();
         SetPhase(GamePhase.Planning);
@@ -221,6 +278,7 @@ public class CoreLoop : MonoBehaviour
         if (phase != GamePhase.Planning) return;
 
         dayIndex = 0;
+        ResetDayClock();
         SetPhase(GamePhase.Playing);
         NotifyStateChanged();
         LoadSceneIfEnabled(worldSceneName);
@@ -259,6 +317,7 @@ public class CoreLoop : MonoBehaviour
         if (phase == GamePhase.DayReview)
         {
             dayIndex++;
+            ResetDayClock();
             SetPhase(GamePhase.Playing);
             NotifyStateChanged();
             LoadSceneIfEnabled(worldSceneName);

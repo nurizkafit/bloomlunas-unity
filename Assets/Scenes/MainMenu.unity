@@ -240,8 +240,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: New Game
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 11f0434a02233bb4c96efbb51bf54d73, type: 2}
-  m_sharedMaterial: {fileID: 5687235179978430714, guid: 11f0434a02233bb4c96efbb51bf54d73, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 593432b8a18421148869f1c512a14cc6, type: 2}
+  m_sharedMaterial: {fileID: 7359404644832332893, guid: 593432b8a18421148869f1c512a14cc6, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -4037,6 +4037,7 @@ GameObject:
   - component: {fileID: 1100456867}
   - component: {fileID: 1100456866}
   - component: {fileID: 1100456865}
+  - component: {fileID: 1100456869}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -4128,6 +4129,50 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &1100456869
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1100456864}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bde3270ad73285c41b8761029680d9a3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CityHudUI
+  coreLoop: {fileID: 0}
+  book: {fileID: 0}
+  goldValue: {fileID: 0}
+  debtValue: {fileID: 0}
+  calendarValue: {fileID: 0}
+  mealpackValue: {fileID: 0}
+  eventTime: {fileID: 0}
+  eventTitle: {fileID: 0}
+  placePanel: {fileID: 0}
+  placeTitle: {fileID: 0}
+  placeDetail: {fileID: 0}
+  goButton: {fileID: 0}
+  placeListPanel: {fileID: 0}
+  homeButton: {fileID: 0}
+  marketButton: {fileID: 0}
+  guildButton: {fileID: 0}
+  outskirtButton: {fileID: 0}
+  wholeTownButton: {fileID: 0}
+  townButton: {fileID: 0}
+  journalButton: {fileID: 0}
+  endDayButton: {fileID: 0}
+  homeScene: ShopdanRumah
+  marketScene: Market
+  guildScene: Guild
+  outskirtScene: CityOverWorld
+  townScene: CityOverWorld
+  plannerScene: MulaiGame
+  homeMinutes: 30
+  marketMinutes: 30
+  guildMinutes: 45
+  outskirtMinutes: 60
+  travelEnergy: 1
 --- !u!1001 &1155509504
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6970,8 +7015,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "A HERB SHOP \xB7 A DEBT \xB7 A NEW START"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 593432b8a18421148869f1c512a14cc6, type: 2}
-  m_sharedMaterial: {fileID: 7359404644832332893, guid: 593432b8a18421148869f1c512a14cc6, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11f0434a02233bb4c96efbb51bf54d73, type: 2}
+  m_sharedMaterial: {fileID: 5687235179978430714, guid: 11f0434a02233bb4c96efbb51bf54d73, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

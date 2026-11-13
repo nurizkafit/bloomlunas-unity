@@ -38,6 +38,11 @@ public class PlannerBookUI : PlannerBookManager
     [SerializeField] private GameObject reviewModal;
     [SerializeField] private TMP_Text reviewSummaryLabel;
     [SerializeField] private TMP_Text reviewWarningLabel;
+    [SerializeField] private TMP_Text reviewSalesGoalLabel;
+    [SerializeField] private TMP_Text reviewHerbsLabel;
+    [SerializeField] private TMP_Text reviewLivingLabel;
+    [SerializeField] private TMP_Text reviewSalesGuessLabel;
+    [SerializeField] private TMP_Text reviewGoldAfterLabel;
     [SerializeField] private Button startAnywayButton;
     [SerializeField] private Button keepPlanningButton;
     [SerializeField] private Button closeReviewButton;
@@ -213,12 +218,12 @@ public class PlannerBookUI : PlannerBookManager
             child.anchorMin = new Vector2(0f, 1f);
             child.anchorMax = new Vector2(1f, 1f);
             child.pivot = new Vector2(0.5f, 1f);
-            child.anchoredPosition = new Vector2(0f, -count * 60f);
-            child.sizeDelta = new Vector2(0f, 56f);
+            child.anchoredPosition = new Vector2(0f, -count * 74f);
+            child.sizeDelta = new Vector2(0f, 70f);
             count++;
         }
 
-        deckRect.sizeDelta = new Vector2(0f, Mathf.Max(1, count) * 60f);
+        deckRect.sizeDelta = new Vector2(0f, Mathf.Max(1, count) * 74f);
     }
 
     private void Start()
@@ -393,11 +398,20 @@ public class PlannerBookUI : PlannerBookManager
 
     public DraggableCard CreateSavedCard(DropSlot slot, PlannerGoalCardData goal)
     {
-        if (!buildSavedCards || slot == null || goal == null || cardPrefab == null) return null;
+        if (!buildSavedCards || slot == null || goal == null) return null;
 
-        DraggableCard card = Instantiate(cardPrefab, slot.transform);
-        card.name = "Card_" + goal.activityName;
+        // Kartu slot sudah ditempatkan di scene oleh tools editor; pakai ulang
+        // supaya tidak ada UI yang dibuat saat Play.
+        DraggableCard card = slot.GetComponentInChildren<DraggableCard>(true);
+        if (card == null)
+        {
+            if (cardPrefab == null) return null;
+            card = Instantiate(cardPrefab, slot.transform);
+        }
+
+        card.transform.SetParent(slot.transform, false);
         card.SetDeckTemplate(false);
+        card.name = "Card_" + goal.activityName;
         card.gameObject.SetActive(true);
         card.SetActivity(goal);
         card.CurrentSlot = slot;
@@ -457,25 +471,30 @@ public class PlannerBookUI : PlannerBookManager
         RefreshGoals();
     }
 
+    /// <summary>
+    /// Kartu yang ditarik dari kotak hari kembali ke dek: goal hari itu
+    /// dikosongkan dan kartu salinannya dihapus. Kartu template di dek tetap
+    /// di tempatnya, jadi dek tidak pernah kehilangan kartu.
+    /// </summary>
     public void ReturnCardToDeck(DraggableCard card)
     {
         if (card == null) return;
 
-        if (card.CurrentSlot != null)
+        if (card.IsDeckTemplate)
         {
-            DropSlot slot = card.CurrentSlot;
-            slot.CurrentCard = null;
-            slot.RefreshEmptyLabel();
-            if (book != null) book.ClearDayGoal(slot.DayIndex);
-            card.CurrentSlot = null;
-            slot.RefreshFromPlanner();
+            card.ReturnToParent();
+            return;
         }
 
-        Transform target = deckContainer != null ? deckContainer : card.transform.parent;
-        if (target != null)
+        DropSlot slot = card.CurrentSlot;
+        if (slot != null)
         {
-            card.transform.SetParent(target, false);
-            card.gameObject.SetActive(true);
+            if (book != null) book.ClearDayGoal(slot.DayIndex);
+            slot.ClearCard(true);
+        }
+        else
+        {
+            card.ReturnToParent();
         }
 
         RefreshGoals();
@@ -490,6 +509,7 @@ public class PlannerBookUI : PlannerBookManager
 
     public void ReviewPlan()
     {
+        if (book == null) book = PlannerBook.Instance;
         if (reviewModal != null) reviewModal.SetActive(true);
         if (reviewSummaryLabel != null && book != null) reviewSummaryLabel.text = book.PlanSummary();
         if (reviewWarningLabel != null && book != null)
@@ -498,6 +518,45 @@ public class PlannerBookUI : PlannerBookManager
                 ? "Some days have no goal yet."
                 : "All seven days are planned.";
         }
+
+        FillReviewSummary();
+    }
+
+    /// <summary>
+    /// Lima baris ringkasan di ReviewModal: sales goal, herbs, living costs,
+    /// perkiraan penjualan, dan gold setelah rencana dijalankan.
+    /// </summary>
+    private void FillReviewSummary()
+    {
+        if (book == null) return;
+
+        int storeDays = 0;
+        int marketDays = 0;
+        int craftDays = 0;
+        for (int day = 0; day < 7; day++)
+        {
+            PlannerDayPlan plan = book.GetDayPlan(day);
+            if (plan == null || !plan.hasGoal || plan.goal == null) continue;
+
+            switch (plan.goal.goalType)
+            {
+                case PlannerGoalType.OpenShop: storeDays++; break;
+                case PlannerGoalType.MarketGuild: marketDays++; break;
+                case PlannerGoalType.Craft: craftDays++; break;
+            }
+        }
+
+        int salesGoal = storeDays * 12;
+        int herbs = book.Budget.store;
+        int living = book.Budget.personal;
+        int salesGuess = Mathf.RoundToInt(storeDays * 30f + marketDays * 8f + craftDays * 12f);
+        int goldAfter = book.Gold - living - herbs + salesGuess;
+
+        if (reviewSalesGoalLabel != null) reviewSalesGoalLabel.text = salesGoal.ToString();
+        if (reviewHerbsLabel != null) reviewHerbsLabel.text = "-" + herbs;
+        if (reviewLivingLabel != null) reviewLivingLabel.text = "-" + living;
+        if (reviewSalesGuessLabel != null) reviewSalesGuessLabel.text = "+" + salesGuess;
+        if (reviewGoldAfterLabel != null) reviewGoldAfterLabel.text = "~ " + goldAfter;
     }
 
     public void CloseReviewModal()
@@ -511,16 +570,13 @@ public class PlannerBookUI : PlannerBookManager
         BeginWeekAndGoToWorld();
     }
 
+    /// <summary>
+    /// Tombol "Finish plan" hanya membuka ReviewModal. Perpindahan ke
+    /// CityOverWorld terjadi dari tombol "Begin the week" di modal itu.
+    /// </summary>
     public void FinishPlan()
     {
-        if (book == null)
-        {
-            ReviewPlan();
-            return;
-        }
-
-        HideReviewModal();
-        BeginWeekAndGoToWorld();
+        ReviewPlan();
     }
 
     /// <summary>

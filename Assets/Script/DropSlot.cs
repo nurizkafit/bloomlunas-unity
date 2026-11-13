@@ -74,19 +74,16 @@ public class DropSlot : MonoBehaviour, IDropHandler, IPointerClickHandler,
         RefreshEmptyLabel();
     }
 
+    /// <summary>
+    /// Melepas kartu dari kotak hari. Kartu tidak dihancurkan: kartu slot sudah
+    /// disiapkan di scene dan dipakai ulang, supaya tidak ada UI baru saat Play.
+    /// </summary>
     public void ClearCard(bool destroyCard)
     {
         if (CurrentCard != null)
         {
             CurrentCard.CurrentSlot = null;
-            if (destroyCard)
-            {
-                Destroy(CurrentCard.gameObject);
-            }
-            else
-            {
-                CurrentCard.gameObject.SetActive(false);
-            }
+            CurrentCard.gameObject.SetActive(false);
         }
 
         CurrentCard = null;
