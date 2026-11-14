@@ -99,7 +99,7 @@ public class PlannerPageView : MonoBehaviour, IPointerClickHandler
         {
             bodyText.richText = true;
             bodyText.raycastTarget = true;
-            bodyText.fontSize = Mathf.Clamp(bodyText.fontSize, 16f, 19f);
+            bodyText.fontSize = Mathf.Clamp(bodyText.fontSize, 18f, 22f);
             bodyText.lineSpacing = 6f;
             bodyText.textWrappingMode = TextWrappingModes.Normal;
             bodyText.overflowMode = TextOverflowModes.Overflow;
@@ -110,15 +110,15 @@ public class PlannerPageView : MonoBehaviour, IPointerClickHandler
         {
             rightText.richText = true;
             rightText.raycastTarget = true;
-            rightText.fontSize = Mathf.Clamp(rightText.fontSize, 15f, 18f);
+            rightText.fontSize = Mathf.Clamp(rightText.fontSize, 17f, 21f);
             rightText.lineSpacing = 6f;
             rightText.color = Hex(Ink);
         }
 
-        if (titleText != null) titleText.fontSize = Mathf.Max(32f, titleText.fontSize);
-        if (subtitleText != null) subtitleText.fontSize = Mathf.Max(16f, subtitleText.fontSize);
-        if (footerText != null) footerText.fontSize = Mathf.Max(14f, footerText.fontSize);
-        if (goalCountLabel != null) goalCountLabel.fontSize = Mathf.Max(18f, goalCountLabel.fontSize);
+        if (titleText != null) titleText.fontSize = Mathf.Max(36f, titleText.fontSize);
+        if (subtitleText != null) subtitleText.fontSize = Mathf.Max(18f, subtitleText.fontSize);
+        if (footerText != null) footerText.fontSize = Mathf.Max(16f, footerText.fontSize);
+        if (goalCountLabel != null) goalCountLabel.fontSize = Mathf.Max(20f, goalCountLabel.fontSize);
     }
 
     private void Subscribe()

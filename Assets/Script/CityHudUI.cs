@@ -325,10 +325,13 @@ public class CityHudUI : MonoBehaviour
             return;
         }
 
-        if (coreLoop.Phase == GamePhase.WeekReview)
+        if (coreLoop.Phase == GamePhase.WeekReview || coreLoop.Phase == GamePhase.MonthEnd)
         {
-            coreLoop.ContinueAfterWeek();
-            if (coreLoop.Phase == GamePhase.Planning) SceneManager.LoadScene(plannerScene);
+            if (coreLoop.Phase == GamePhase.WeekReview) coreLoop.ContinueAfterWeek();
+            if (coreLoop.Phase == GamePhase.Planning || coreLoop.Phase == GamePhase.MonthEnd)
+            {
+                SceneManager.LoadScene(plannerScene);
+            }
         }
     }
 

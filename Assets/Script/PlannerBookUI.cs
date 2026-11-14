@@ -76,6 +76,7 @@ public class PlannerBookUI : PlannerBookManager
 
     private DropSlot selectedSlot;
     private bool wired;
+    private bool monthEndMode;
 
     public PlannerBook Book => book;
     public CoreLoop CoreLoop => coreLoop;
@@ -234,6 +235,8 @@ public class PlannerBookUI : PlannerBookManager
         {
             coreLoop.StartNewGame();
         }
+
+        ShowMonthEndIfNeeded();
     }
 
     private void OnEnable()
@@ -243,6 +246,7 @@ public class PlannerBookUI : PlannerBookManager
         if (book != null) book.PlannerChanged += RefreshAll;
         if (coreLoop != null) coreLoop.StateChanged += RefreshHeader;
         RefreshAll();
+        ShowMonthEndIfNeeded();
     }
 
     private void OnDisable()
@@ -566,8 +570,74 @@ public class PlannerBookUI : PlannerBookManager
 
     public void StartWeekAnyway()
     {
+        if (monthEndMode)
+        {
+            PayAndStartNextMonth();
+            return;
+        }
+
         HideReviewModal();
         BeginWeekAndGoToWorld();
+    }
+
+    /// <summary>
+    /// Saat minggu terakhir bulan selesai, CoreLoop masuk fase MonthEnd.
+    /// Planner menampilkan rekap bulan memakai ReviewModal yang sudah ada,
+    /// jadi pemain bisa membayar dan lanjut ke bulan berikutnya (bulan 2).
+    /// </summary>
+    public void ShowMonthEndIfNeeded()
+    {
+        if (coreLoop == null) coreLoop = CoreLoop.Instance;
+        if (coreLoop == null || coreLoop.Phase != GamePhase.MonthEnd) return;
+        if (reviewModal == null) return;
+
+        monthEndMode = true;
+        reviewModal.SetActive(true);
+
+        int month = coreLoop.Month;
+        int payment = Mathf.Min(coreLoop.MinimumDebtPayment, coreLoop.Debt);
+        if (reviewSalesGoalLabel != null) reviewSalesGoalLabel.text = coreLoop.Gold + " G";
+        if (reviewHerbsLabel != null) reviewHerbsLabel.text = coreLoop.Debt + " G";
+        if (reviewLivingLabel != null) reviewLivingLabel.text = "-" + coreLoop.MonthlyUtilities;
+        if (reviewSalesGuessLabel != null) reviewSalesGuessLabel.text = "-" + payment;
+        if (reviewGoldAfterLabel != null)
+        {
+            reviewGoldAfterLabel.text = "~ " + Mathf.Max(0, coreLoop.Gold - payment);
+        }
+
+        if (reviewSummaryLabel != null)
+        {
+            reviewSummaryLabel.text = "Month " + month + " is closed.";
+        }
+        if (reviewWarningLabel != null)
+        {
+            reviewWarningLabel.text = "Pay the minimum debt and start month " + (month + 1) + ".";
+        }
+        SetButtonLabel(startAnywayButton, "Pay & start month " + (month + 1));
+        if (keepPlanningButton != null) keepPlanningButton.gameObject.SetActive(false);
+    }
+
+    private void PayAndStartNextMonth()
+    {
+        if (coreLoop == null) coreLoop = CoreLoop.Instance;
+        if (coreLoop == null) return;
+
+        coreLoop.SettleMonth(coreLoop.MinimumDebtPayment);
+        if (coreLoop.Phase == GamePhase.Retro) coreLoop.StartNextMonth();
+
+        monthEndMode = false;
+        HideReviewModal();
+        if (keepPlanningButton != null) keepPlanningButton.gameObject.SetActive(true);
+        SetButtonLabel(startAnywayButton, "Begin the week");
+        SwitchPage(PlannerPageId.Goals);
+        RefreshAll();
+    }
+
+    private static void SetButtonLabel(Button button, string value)
+    {
+        if (button == null) return;
+        TMP_Text label = button.GetComponentInChildren<TMP_Text>(true);
+        if (label != null) label.text = value;
     }
 
     /// <summary>

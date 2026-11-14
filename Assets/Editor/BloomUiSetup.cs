@@ -51,7 +51,11 @@ namespace BloomLunas.EditorTools
                 SetupEventSystem();
                 SetupCityHud();
                 SetupCityExtras(scene);
-                if (path.EndsWith("MulaiGame.unity")) SetupReviewModal();
+                if (path.EndsWith("MulaiGame.unity"))
+                {
+                    SetupReviewModal();
+                    ImprovePlannerReadability();
+                }
                 ApplyFonts(scene);
                 EditorSceneManager.MarkSceneDirty(scene);
                 EditorSceneManager.SaveScene(scene);
@@ -158,6 +162,30 @@ namespace BloomLunas.EditorTools
             }
 
             SetupDeck(planner);
+        }
+
+        /// <summary>
+        /// MulaiGame: naikkan teks yang terlalu kecil supaya halaman buku
+        /// tetap terbaca di layar 1080p/1440p.
+        /// </summary>
+        private static void ImprovePlannerReadability()
+        {
+            Transform canvas = FindRoot("Canvas");
+            if (canvas == null) return;
+            Transform book = Find(canvas, "PlannerBookUI");
+            if (book == null) book = canvas;
+
+            foreach (TMP_Text text in book.GetComponentsInChildren<TMP_Text>(true))
+            {
+                if (text.name == "PageNumber") continue;
+
+                float min = 18f;
+                if (text.name == "Body") min = 20f;
+
+                if (text.fontSize < min) text.fontSize = min;
+            }
+
+            Debug.Log("[Setup] planner text sizes raised");
         }
 
         private static void SetupDeck(PlannerBookUI planner)
@@ -854,19 +882,11 @@ namespace BloomLunas.EditorTools
             }
         }
 
+        /// <summary>Semua teks di semua scene memakai Xmind.</summary>
         private static void ApplyFont(TMP_Text text, bool forceHeading = false)
         {
             if (text == null) return;
-
-            bool heading = forceHeading ||
-                           text.fontSize >= 30f ||
-                           text.name == "Title" ||
-                           text.name.StartsWith("Title") ||
-                           text.name == "PageTitle" ||
-                           text.name == "Header";
-
-            TMP_FontAsset font = heading ? headingFont : bodyFont;
-            if (font != null) text.font = font;
+            if (bodyFont != null) text.font = bodyFont;
         }
 
         // -----------------------------------------------------------------

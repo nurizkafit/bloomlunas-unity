@@ -147,11 +147,11 @@ public class PlannerPageTable : MonoBehaviour
 
     private void Section(RectTransform column, string title)
     {
-        TMP_Text text = Label(column, title, 15, Accent, FontStyles.Bold);
+        TMP_Text text = Label(column, title, 20, Accent, FontStyles.Bold);
         text.characterSpacing = 0.4f;
         LayoutElement element = text.gameObject.AddComponent<LayoutElement>();
-        element.preferredHeight = 24f;
-        element.minHeight = 24f;
+        element.preferredHeight = 28f;
+        element.minHeight = 28f;
     }
 
     private GameObject Row(RectTransform column, Sprite icon, string title, string value,
@@ -168,8 +168,8 @@ public class PlannerPageTable : MonoBehaviour
         background.raycastTarget = false;
 
         LayoutElement rowElement = go.AddComponent<LayoutElement>();
-        rowElement.preferredHeight = 42f;
-        rowElement.minHeight = 42f;
+        rowElement.preferredHeight = 52f;
+        rowElement.minHeight = 52f;
 
         HorizontalLayoutGroup horizontal = go.AddComponent<HorizontalLayoutGroup>();
         horizontal.padding = new RectOffset(9, 9, 2, 2);
@@ -190,12 +190,12 @@ public class PlannerPageTable : MonoBehaviour
             image.preserveAspect = true;
             image.raycastTarget = false;
             LayoutElement iconElement = iconObject.AddComponent<LayoutElement>();
-            iconElement.preferredWidth = 25f;
-            iconElement.preferredHeight = 25f;
-            iconElement.minWidth = 25f;
+            iconElement.preferredWidth = 28f;
+            iconElement.preferredHeight = 28f;
+            iconElement.minWidth = 28f;
         }
 
-        TMP_Text titleText = Label(rect, title, 14, Ink, FontStyles.Normal);
+        TMP_Text titleText = Label(rect, title, 19, Ink, FontStyles.Normal);
         titleText.overflowMode = TextOverflowModes.Ellipsis;
         LayoutElement titleElement = titleText.gameObject.AddComponent<LayoutElement>();
         titleElement.flexibleWidth = 1f;
@@ -203,11 +203,11 @@ public class PlannerPageTable : MonoBehaviour
 
         if (!string.IsNullOrEmpty(value))
         {
-            TMP_Text valueText = Label(rect, value, 14, Muted, FontStyles.Bold);
+            TMP_Text valueText = Label(rect, value, 19, Muted, FontStyles.Bold);
             valueText.horizontalAlignment = HorizontalAlignmentOptions.Right;
             LayoutElement valueElement = valueText.gameObject.AddComponent<LayoutElement>();
-            valueElement.preferredWidth = 58f;
-            valueElement.minWidth = 58f;
+            valueElement.preferredWidth = 74f;
+            valueElement.minWidth = 74f;
         }
 
         if (actions != null && callbacks != null)
@@ -230,7 +230,7 @@ public class PlannerPageTable : MonoBehaviour
                 button.targetGraphic = buttonImage;
                 button.onClick.AddListener(() => callback());
 
-                TMP_Text buttonText = Label(buttonRect, label, 15, Ink, FontStyles.Bold);
+                TMP_Text buttonText = Label(buttonRect, label, 19, Ink, FontStyles.Bold);
                 buttonText.horizontalAlignment = HorizontalAlignmentOptions.Center;
                 buttonText.verticalAlignment = VerticalAlignmentOptions.Middle;
                 buttonText.rectTransform.anchorMin = Vector2.zero;
@@ -239,9 +239,9 @@ public class PlannerPageTable : MonoBehaviour
                 buttonText.rectTransform.offsetMax = Vector2.zero;
 
                 LayoutElement buttonElement = buttonObject.AddComponent<LayoutElement>();
-                buttonElement.preferredWidth = 23f;
-                buttonElement.preferredHeight = 23f;
-                buttonElement.minWidth = 23f;
+                buttonElement.preferredWidth = 32f;
+                buttonElement.preferredHeight = 32f;
+                buttonElement.minWidth = 32f;
             }
         }
 
@@ -271,7 +271,7 @@ public class PlannerPageTable : MonoBehaviour
 
     private void TextBlock(RectTransform column, string text, float height)
     {
-        TMP_Text label = Label(column, text, 14, Ink, FontStyles.Normal);
+        TMP_Text label = Label(column, text, 18, Ink, FontStyles.Normal);
         label.textWrappingMode = TextWrappingModes.Normal;
         label.overflowMode = TextOverflowModes.Overflow;
         label.alignment = TextAlignmentOptions.TopLeft;

@@ -1370,10 +1370,10 @@ MonoBehaviour:
   goButton: {fileID: 0}
   placeListPanel: {fileID: 1612868825}
   homeButton: {fileID: 1837681895}
-  marketButton: {fileID: 876028441}
-  guildButton: {fileID: 305767421}
+  marketButton: {fileID: 0}
+  guildButton: {fileID: 0}
   outskirtButton: {fileID: 0}
-  wholeTownButton: {fileID: 1719614150}
+  wholeTownButton: {fileID: 0}
   townButton: {fileID: 1326700582}
   journalButton: {fileID: 137269473}
   endDayButton: {fileID: 81663410}
@@ -5386,7 +5386,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 93.012024, y: 1.0508118}
+  m_AnchoredPosition: {x: 93.012024, y: 1.0508423}
   m_SizeDelta: {x: 52.1881, y: 56.1318}
   m_Pivot: {x: 1, y: 1}
 --- !u!114 &1117245453
@@ -7486,8 +7486,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 6
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 593432b8a18421148869f1c512a14cc6, type: 2}
-  m_sharedMaterial: {fileID: 7359404644832332893, guid: 593432b8a18421148869f1c512a14cc6, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11f0434a02233bb4c96efbb51bf54d73, type: 2}
+  m_sharedMaterial: {fileID: 5687235179978430714, guid: 11f0434a02233bb4c96efbb51bf54d73, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -9255,8 +9255,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Rest
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 593432b8a18421148869f1c512a14cc6, type: 2}
-  m_sharedMaterial: {fileID: 7359404644832332893, guid: 593432b8a18421148869f1c512a14cc6, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11f0434a02233bb4c96efbb51bf54d73, type: 2}
+  m_sharedMaterial: {fileID: 5687235179978430714, guid: 11f0434a02233bb4c96efbb51bf54d73, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
