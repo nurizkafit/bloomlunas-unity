@@ -627,44 +627,25 @@ namespace BloomLunas.EditorTools
             Set(ui, "foodPanel", food != null ? food.gameObject : null);
             Set(ui, "sellPanel", sell != null ? sell.gameObject : null);
 
-            // Panel Guild bertumpuk, jadi tombol yang ada dipakai sebagai tab.
-            Set(ui, "tabBuy", Button(buy, "ButtonSell"));
-            Set(ui, "tabFood", Button(food, "ButtonBuyFood"));
-            Set(ui, "tabSell", Button(sell, "ButtonSell"));
+            // Panel Buy/Food/Sell memakai rect yang sama (saling menutup), jadi
+            // hanya satu yang boleh tampil. Tombol Buy / Buy food / Sell ada di
+            // dalam panelnya masing-masing, sehingga tab ditaruh di luar panel
+            // supaya tidak ikut tersembunyi.
+            Set(ui, "tabBuy", EnsureTabButton(stall, "TabBuy", "Buy", -160f));
+            Set(ui, "tabFood", EnsureTabButton(stall, "TabFood", "Buy food", 0f));
+            Set(ui, "tabSell", EnsureTabButton(stall, "TabSell", "Sell", 160f));
 
-            // Tombol aksi terpisah di bawah tiap panel supaya transaksi tetap bisa.
-            Set(ui, "buyButton", EnsureActionButton(buy, "ButtonGuildBuy", "Buy"));
+            Set(ui, "buyButton", Button(buy, "ButtonSell"));
             Set(ui, "foodPlus", Button(food, "Button+"));
             Set(ui, "foodMinus", Button(food, "Button-"));
-            Set(ui, "foodBuyButton", EnsureActionButton(food, "ButtonGuildBuyFood", "Buy food"));
-            Set(ui, "sellButton", EnsureActionButton(sell, "ButtonGuildSell", "Sell"));
+            Set(ui, "foodBuyButton", Button(food, "ButtonBuyFood"));
+            Set(ui, "sellButton", Button(sell, "ButtonSell"));
 
             TMP_Text foodQty = Text(food, "PanelBerapabanyakaygdiberli/Berapabanyakaygdiberli");
             if (foodQty == null) foodQty = FindByName(food, "Berapabanyakaygdiberli")?.GetComponent<TMP_Text>();
-            if (foodQty == null)
-            {
-                foodQty = MakeText(food, "FoodQty", "0", 20f, TextAlignmentOptions.Center,
-                    new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(16f, 40f), new Vector2(-16f, 72f));
-            }
             Set(ui, "foodQty", foodQty);
             Set(ui, "mealpackHave", Text(food, "PanelMealPack/HowMuch(YouHave)"));
             Set(ui, "foodPrice", Text(food, "PanelMealPack/Price Each (1)"));
-
-            TMP_Text buyTotal = Text(buy, "berapabanyakuangygakandiperukan/Text (TMP)");
-            if (buyTotal == null)
-            {
-                buyTotal = MakeText(buy, "BuyTotal", "-0", 20f, TextAlignmentOptions.MidlineRight,
-                    new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(16f, 8f), new Vector2(-16f, 34f));
-            }
-            Set(ui, "buyTotal", buyTotal);
-
-            TMP_Text sellTotal = Text(sell, "berapabanyakygkitadapat/Text (TMP)");
-            if (sellTotal == null)
-            {
-                sellTotal = MakeText(sell, "SellTotal", "+0", 20f, TextAlignmentOptions.MidlineRight,
-                    new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(16f, 8f), new Vector2(-16f, 34f));
-            }
-            Set(ui, "sellTotal", sellTotal);
             Set(ui, "selectAllButton", Button(buy, "ButtonSelectAll"));
             Set(ui, "deselectAllButton", Button(buy, "ButtonDeselectAll"));
             SetArray(ui, "buyRows", buys);
@@ -681,6 +662,17 @@ namespace BloomLunas.EditorTools
             Set(location, "bulkLotsButton", Button(stall, "ButtonBulkLots"));
             Set(location, "lessonsButton", Button(stall, "ButtonLessons"));
             Set(location, "questBoardButton", Button(canvas, "PanelBuatMilihTempat/ButtonQuestBoard"));
+
+            RemoveOldGuildButtons(stall);
+
+            // Sisakan pita di atas untuk tab, supaya tab tidak menimpa baris pertama.
+            // Marker mencegah penyusutan berulang setiap kali setup dijalankan.
+            if (Find(stall, "GuildTabStrip") == null)
+            {
+                ShrinkGuildPanels(buy, food, sell, 46f);
+                GameObject marker = new GameObject("GuildTabStrip", typeof(RectTransform));
+                marker.transform.SetParent(stall, false);
+            }
 
             if (buy != null) buy.gameObject.SetActive(true);
             if (food != null) food.gameObject.SetActive(false);
@@ -762,6 +754,27 @@ namespace BloomLunas.EditorTools
 
             HideLocationPanels(canvas, sceneName);
             Debug.Log("[Setup] location UI wired for " + sceneName);
+        }
+
+        private static void ShrinkGuildPanels(Transform buy, Transform food, Transform sell, float topInset)
+        {
+            foreach (Transform panel in new[] { buy, food, sell })
+            {
+                RectTransform rect = panel as RectTransform;
+                if (rect == null) continue;
+                rect.offsetMax = new Vector2(rect.offsetMax.x, rect.offsetMax.y - topInset);
+            }
+        }
+
+        /// <summary>Buang tombol aksi lama yang dulu ditambahkan di dasar panel (menimpa baris).</summary>
+        private static void RemoveOldGuildButtons(Transform stall)
+        {
+            string[] names = { "ButtonGuildBuy", "ButtonGuildBuyFood", "ButtonGuildSell", "BuyTotal", "SellTotal", "FoodQty" };
+            foreach (string name in names)
+            {
+                Transform found = FindByName(stall, name);
+                if (found != null) Object.DestroyImmediate(found.gameObject);
+            }
         }
 
         private static void HideLocationPanels(Transform canvas, string sceneName)
@@ -1078,8 +1091,8 @@ namespace BloomLunas.EditorTools
             return button;
         }
 
-        /// <summary>Tombol aksi kecil di bawah panel (dipakai Guild).</summary>
-        private static Button EnsureActionButton(Transform parent, string name, string label)
+        /// <summary>Tab Buy / Buy food / Sell di atas panel Guild (di luar panel agar tidak ikut tersembunyi).</summary>
+        private static Button EnsureTabButton(Transform parent, string name, string label, float x)
         {
             if (parent == null) return null;
 
@@ -1089,11 +1102,11 @@ namespace BloomLunas.EditorTools
             GameObject obj = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
             RectTransform rect = obj.GetComponent<RectTransform>();
             rect.SetParent(parent, false);
-            rect.anchorMin = new Vector2(0.5f, 0f);
-            rect.anchorMax = new Vector2(0.5f, 0f);
-            rect.pivot = new Vector2(0.5f, 0f);
-            rect.sizeDelta = new Vector2(150f, 40f);
-            rect.anchoredPosition = new Vector2(0f, 14f);
+            rect.anchorMin = new Vector2(0.5f, 1f);
+            rect.anchorMax = new Vector2(0.5f, 1f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.sizeDelta = new Vector2(140f, 38f);
+            rect.anchoredPosition = new Vector2(x, -12f);
 
             Sprite sprite = null;
             Transform template = Find(parent, "Button+");
