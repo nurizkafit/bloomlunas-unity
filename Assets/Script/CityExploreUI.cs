@@ -23,6 +23,8 @@ public class CityExploreUI : MonoBehaviour
     [SerializeField] private GameObject hubEventPanel;
     [SerializeField] private GameObject hubPlaceListPanel;
     [SerializeField] private GameObject confirmPanel;
+    [Tooltip("Panel berisi 3 tombol (Explore / Town / Go home) di dalam confirmPanel.")]
+    [SerializeField] private GameObject confirmButtonsPanel;
     [SerializeField] private GameObject gameplayPanel;
     [SerializeField] private GameObject foundPanel;
 
@@ -114,8 +116,12 @@ public class CityExploreUI : MonoBehaviour
         if (hubEventPanel != null) hubEventPanel.SetActive(false);
         if (hubPlaceListPanel != null) hubPlaceListPanel.SetActive(false);
         if (confirmPanel != null) confirmPanel.SetActive(true);
+        if (confirmButtonsPanel != null) confirmButtonsPanel.SetActive(true);
         if (gameplayPanel != null) gameplayPanel.SetActive(false);
         if (foundPanel != null) foundPanel.SetActive(false);
+        // Keep walking / Head back hanya dipakai saat sudah di dalam outskirt.
+        if (keepWalkingButton != null) keepWalkingButton.gameObject.SetActive(false);
+        if (headBackButton != null) headBackButton.gameObject.SetActive(false);
 
         basket.Clear();
         currentSpot = null;
@@ -123,16 +129,25 @@ public class CityExploreUI : MonoBehaviour
         RefreshBasket();
     }
 
+    /// <summary>
+    /// panelPanel tetap aktif karena PanelCityOutskirt adalah child-nya;
+    /// yang disembunyikan hanya deretan tombol Explore/Town/Go home.
+    /// </summary>
     private void ExploreOutskirt()
     {
-        if (confirmPanel != null) confirmPanel.SetActive(false);
+        if (confirmButtonsPanel != null) confirmButtonsPanel.SetActive(false);
         if (gameplayPanel != null) gameplayPanel.SetActive(true);
         if (foundPanel != null) foundPanel.SetActive(false);
+        if (keepWalkingButton != null) keepWalkingButton.gameObject.SetActive(true);
+        if (headBackButton != null) headBackButton.gameObject.SetActive(true);
     }
 
     private void KeepWalking()
     {
+        if (confirmButtonsPanel != null) confirmButtonsPanel.SetActive(false);
         if (gameplayPanel != null) gameplayPanel.SetActive(true);
+        if (keepWalkingButton != null) keepWalkingButton.gameObject.SetActive(true);
+        if (headBackButton != null) headBackButton.gameObject.SetActive(true);
 
         Spend(walkMinutes, walkEnergy);
 
@@ -208,7 +223,9 @@ public class CityExploreUI : MonoBehaviour
     {
         if (foundPanel != null) foundPanel.SetActive(false);
         if (gameplayPanel != null) gameplayPanel.SetActive(false);
-        if (confirmPanel != null) confirmPanel.SetActive(true);
+        if (confirmButtonsPanel != null) confirmButtonsPanel.SetActive(true);
+        if (keepWalkingButton != null) keepWalkingButton.gameObject.SetActive(false);
+        if (headBackButton != null) headBackButton.gameObject.SetActive(false);
     }
 
     private void Leave()

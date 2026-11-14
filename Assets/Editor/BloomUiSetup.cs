@@ -55,6 +55,7 @@ namespace BloomLunas.EditorTools
                 {
                     SetupReviewModal();
                     ImprovePlannerReadability();
+                    ImprovePlannerButtons();
                 }
                 ApplyFonts(scene);
                 EditorSceneManager.MarkSceneDirty(scene);
@@ -186,6 +187,52 @@ namespace BloomLunas.EditorTools
             }
 
             Debug.Log("[Setup] planner text sizes raised");
+        }
+
+        /// <summary>
+        /// Tombol kecil di halaman planner (-/+/L/F/H/checkbox/Deliver) diperbesar
+        /// dan labelnya dinaikkan supaya bisa diklik dengan nyaman.
+        /// </summary>
+        private static void ImprovePlannerButtons()
+        {
+            Transform canvas = FindRoot("Canvas");
+            if (canvas == null) return;
+
+            Transform pages = Find(canvas, "PlannerBookUI/BookArea/PagesHost");
+            if (pages == null) pages = FindByName(canvas, "PagesHost");
+            if (pages == null) return;
+
+            int count = 0;
+            foreach (Button button in pages.GetComponentsInChildren<Button>(true))
+            {
+                TMP_Text label = button.GetComponentInChildren<TMP_Text>(true);
+                if (label == null) continue;
+
+                string text = (label.text ?? string.Empty).Trim();
+                bool action = text == "-" || text == "+" || text == "L" || text == "F" ||
+                              text == "H" || text == "x" || text == "o" || text == "Deliver";
+                if (!action) continue;
+
+                float width = text == "Deliver" ? 96f : 42f;
+                RectTransform rect = button.transform as RectTransform;
+                if (rect != null) rect.sizeDelta = new Vector2(width, 40f);
+
+                LayoutElement element = button.GetComponent<LayoutElement>();
+                if (element == null) element = button.gameObject.AddComponent<LayoutElement>();
+                element.preferredWidth = width;
+                element.preferredHeight = 40f;
+                element.minWidth = width;
+                element.minHeight = 40f;
+
+                label.fontSize = text == "Deliver" ? 20f : 24f;
+                label.alignment = TextAlignmentOptions.Center;
+                label.enableAutoSizing = false;
+                label.raycastTarget = false;
+                ApplyFont(label);
+                count++;
+            }
+
+            Debug.Log("[Setup] planner action buttons enlarged: " + count);
         }
 
         private static void SetupDeck(PlannerBookUI planner)
@@ -542,6 +589,7 @@ namespace BloomLunas.EditorTools
             Set(explore, "hubEventPanel", Find(canvas, "PanelEventyangudahdipilih")?.gameObject);
             Set(explore, "hubPlaceListPanel", Find(canvas, "PanelBuatMilihTempat")?.gameObject);
             Set(explore, "confirmPanel", confirm.gameObject);
+            Set(explore, "confirmButtonsPanel", Find(confirm, "PanelBuatMilihTempat (1)")?.gameObject);
             Set(explore, "gameplayPanel", gameplay.gameObject);
             Set(explore, "foundPanel", found.gameObject);
             Set(explore, "exploreButton", Button(confirm, "PanelBuatMilihTempat (1)/ButtonExploretheOutskirt"));
