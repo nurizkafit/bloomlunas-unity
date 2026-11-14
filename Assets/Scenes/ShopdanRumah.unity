@@ -5749,6 +5749,7 @@ GameObject:
   - component: {fileID: 1260552561}
   - component: {fileID: 1260552560}
   - component: {fileID: 1260552565}
+  - component: {fileID: 1260552566}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -5897,6 +5898,58 @@ MonoBehaviour:
   cameraRig: {fileID: 0}
   player: {fileID: 0}
   outskirtUI: {fileID: 0}
+--- !u!114 &1260552566
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1260552559}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8eed03bd5a30ba54896711335d08c3e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocationUI
+  coreLoop: {fileID: 0}
+  book: {fileID: 0}
+  townScene: CityOverWorld
+  homeScene: ShopdanRumah
+  plannerScene: MulaiGame
+  craftingScene: CraftingRoom
+  restPanel: {fileID: 0}
+  eatPanel: {fileID: 0}
+  shortBreakPanel: {fileID: 0}
+  sleepPanel: {fileID: 0}
+  shopPanel: {fileID: 1734730231}
+  productPanel: {fileID: 1503810258}
+  shelfPanel: {fileID: 1400193630}
+  endDayButton: {fileID: 81663410}
+  journalButton: {fileID: 1401172983}
+  townButton: {fileID: 1313149209}
+  homeButton: {fileID: 0}
+  craftingButton: {fileID: 1798166458}
+  seeTownButton: {fileID: 0}
+  restButton: {fileID: 0}
+  eatButton: {fileID: 0}
+  shortBreakButton: {fileID: 0}
+  sleepButton: {fileID: 0}
+  closeButton: {fileID: 1363534555}
+  shopButton: {fileID: 486034128}
+  openShopButton: {fileID: 503783146}
+  grindingButton: {fileID: 0}
+  dryingButton: {fileID: 0}
+  craftingTableButton: {fileID: 0}
+  stall: {fileID: 0}
+  bulkLotsButton: {fileID: 0}
+  lessonsButton: {fileID: 0}
+  questBoardButton: {fileID: 0}
+  mealEnergy: 2
+  restEnergy: 2
+  restMinutes: 120
+  breakEnergy: 1
+  breakMinutes: 60
+  craftMinutes: 60
+  bulkLotsQty: 10
 --- !u!1 &1261389876
 GameObject:
   m_ObjectHideFlags: 0
@@ -6049,6 +6102,123 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1264403662}
   m_CullTransparentMesh: 1
+--- !u!1 &1292862214
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1292862217}
+  - component: {fileID: 1292862216}
+  - component: {fileID: 1292862215}
+  m_Layer: 0
+  m_Name: GameSystems
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1292862215
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1292862214}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84a75214ac38a2a4faadb746426c81f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlannerBook
+  coreLoop: {fileID: 1292862216}
+  currentWeek:
+    month: 1
+    week: 1
+    days: []
+  previousWeek:
+    month: 1
+    week: 1
+    days: []
+  products: []
+  budget:
+    store: 100
+    personal: 63
+    buffer: 70
+  marketItems: []
+  inventory: []
+  ledger: []
+  jarSpentStore: 0
+  jarSpentPersonal: 0
+  jarSpentBuffer: 0
+  skills: []
+  skillXpPerGoal: 5
+  skillXpPerLevel: 30
+  lastWeekNote: Your first week. At the end of each week, you leave a note here for yourself.
+  firstSteps: []
+  commissions: []
+  requests: []
+  schedule: []
+  energy: 6
+  maxEnergy: 6
+--- !u!114 &1292862216
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1292862214}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58cb668519b9d284eb8fadc3b4a7ef1f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CoreLoop
+  persistBetweenScenes: 1
+  weeksPerMonth: 4
+  startingGold: 240
+  startingDebt: 3000
+  weeklyLivingCost: 40
+  monthlyUtilities: 120
+  minimumDebtPayment: 450
+  loadScenes: 0
+  menuSceneName: MainMenu
+  planningSceneName: MulaiGame
+  worldSceneName: CityOverWorld
+  startHour: 6
+  maxEnergy: 6
+  phase: 0
+  month: 1
+  week: 1
+  dayIndex: 0
+  gold: 0
+  debt: 0
+  timeMinutes: 360
+  energy: 6
+  monthGoldEarned: 0
+  monthGoldSpent: 0
+  monthDebtPaid: 0
+  monthLivingPaid: 0
+  monthUtilitiesPaid: 0
+  monthProductsSold: 0
+  monthDaysPlayed: 0
+  monthStartGold: 0
+  monthStartDebt: 0
+--- !u!4 &1292862217
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1292862214}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1313149207
 GameObject:
   m_ObjectHideFlags: 0
@@ -6549,7 +6719,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1400193631
 RectTransform:
   m_ObjectHideFlags: 0
@@ -6992,7 +7162,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1503810259
 RectTransform:
   m_ObjectHideFlags: 0
@@ -8201,7 +8371,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1734730232
 RectTransform:
   m_ObjectHideFlags: 0
@@ -9717,3 +9887,4 @@ SceneRoots:
   - {fileID: 1404513216}
   - {fileID: 993579580}
   - {fileID: 1961193254}
+  - {fileID: 1292862217}

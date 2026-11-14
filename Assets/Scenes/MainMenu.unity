@@ -4038,6 +4038,7 @@ GameObject:
   - component: {fileID: 1100456866}
   - component: {fileID: 1100456865}
   - component: {fileID: 1100456869}
+  - component: {fileID: 1100456870}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -4179,6 +4180,21 @@ MonoBehaviour:
   cameraRig: {fileID: 0}
   player: {fileID: 0}
   outskirtUI: {fileID: 0}
+--- !u!114 &1100456870
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1100456864}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 81addf62a14205e488898425dcfa43e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MainMenuUI
+  playButton: {fileID: 1717577546}
+  quitButton: {fileID: 33374484}
+  firstScene: MulaiGame
 --- !u!1001 &1155509504
 PrefabInstance:
   m_ObjectHideFlags: 0

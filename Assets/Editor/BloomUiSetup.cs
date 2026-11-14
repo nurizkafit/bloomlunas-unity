@@ -49,6 +49,7 @@ namespace BloomLunas.EditorTools
 
                 Scene scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
                 SetupEventSystem();
+                EnsureGameSystems(scene.name);
                 SetupCityHud();
                 SetupCityExtras(scene);
                 if (path.EndsWith("MulaiGame.unity"))
@@ -554,10 +555,226 @@ namespace BloomLunas.EditorTools
             Debug.Log("[Setup] EventSystem created in " + SceneManager.GetActiveScene().name);
         }
 
+        /// <summary>
+        /// Scene lokasi yang dibuka langsung dari Editor belum punya CoreLoop dan
+        /// PlannerBook, sehingga tombolnya tidak bereaksi. Tambahkan GameSystems
+        /// sekali; singleton akan membuang duplikat saat pindah scene.
+        /// </summary>
+        private static void EnsureGameSystems(string sceneName)
+        {
+            if (sceneName == "MainMenu") return;
+            if (Object.FindObjectOfType<CoreLoop>(true) != null) return;
+
+            GameObject systems = new GameObject("GameSystems", typeof(CoreLoop), typeof(PlannerBook));
+            CoreLoop loop = systems.GetComponent<CoreLoop>();
+            PlannerBook book = systems.GetComponent<PlannerBook>();
+            Set(book, "coreLoop", loop);
+            Debug.Log("[Setup] GameSystems created in " + sceneName);
+        }
+
         private static void SetupCityExtras(Scene scene)
         {
             if (scene.name == "CityOverWorld") SetupOutskirt();
             else if (scene.name == "Market") SetupMarketStall();
+            else if (scene.name == "Guild") SetupGuildStall();
+            else if (scene.name == "Bedroom" || scene.name == "ShopdanRumah" || scene.name == "CraftingRoom")
+                SetupLocationUI(scene.name);
+            else if (scene.name == "MainMenu") SetupMainMenu();
+        }
+
+        /// <summary>Main Menu: pasang ulang aksi Play dan Quit.</summary>
+        private static void SetupMainMenu()
+        {
+            Transform canvas = FindRoot("Canvas");
+            if (canvas == null) return;
+
+            MainMenuUI ui = canvas.GetComponent<MainMenuUI>();
+            if (ui == null) ui = canvas.gameObject.AddComponent<MainMenuUI>();
+
+            Set(ui, "playButton", Button(canvas, "Panel/Button"));
+            Set(ui, "quitButton", Button(canvas, "Panel/Button (3)"));
+            Debug.Log("[Setup] main menu wired");
+        }
+
+        /// <summary>
+        /// Guild memakai panel market yang sama (Buy / Buy food / Sell) tetapi
+        /// tanpa tombol tab, jadi semua panel tampil sekaligus.
+        /// </summary>
+        private static void SetupGuildStall()
+        {
+            Transform canvas = FindRoot("Canvas");
+            if (canvas == null) return;
+
+            Transform stall = Find(canvas, "PanelGuild");
+            if (stall == null) { Debug.LogWarning("[Setup] PanelGuild not found"); return; }
+            Transform buy = Find(stall, "PanelHerbofMaterial");
+            Transform food = Find(stall, "PanelFood");
+            Transform sell = Find(stall, "PanelSell");
+
+            MarketRowView[] buys = buy != null
+                ? buy.GetComponentsInChildren<MarketRowView>(true) : new MarketRowView[0];
+            MarketRowView[] sells = sell != null
+                ? sell.GetComponentsInChildren<MarketRowView>(true) : new MarketRowView[0];
+
+            MarketStallUI ui = canvas.GetComponent<MarketStallUI>();
+            if (ui == null) ui = canvas.gameObject.AddComponent<MarketStallUI>();
+
+            Set(ui, "stallPanel", stall.gameObject);
+            Set(ui, "openButton", Button(canvas, "PanelBuatMilihTempat/ButtonGuildDesk"));
+            Set(ui, "closeButton", Button(stall, "ButtonClose"));
+            SetBool(ui, "singlePanelTabs", true);
+            Set(ui, "buyPanel", buy != null ? buy.gameObject : null);
+            Set(ui, "foodPanel", food != null ? food.gameObject : null);
+            Set(ui, "sellPanel", sell != null ? sell.gameObject : null);
+
+            // Panel Guild bertumpuk, jadi tombol yang ada dipakai sebagai tab.
+            Set(ui, "tabBuy", Button(buy, "ButtonSell"));
+            Set(ui, "tabFood", Button(food, "ButtonBuyFood"));
+            Set(ui, "tabSell", Button(sell, "ButtonSell"));
+
+            // Tombol aksi terpisah di bawah tiap panel supaya transaksi tetap bisa.
+            Set(ui, "buyButton", EnsureActionButton(buy, "ButtonGuildBuy", "Buy"));
+            Set(ui, "foodPlus", Button(food, "Button+"));
+            Set(ui, "foodMinus", Button(food, "Button-"));
+            Set(ui, "foodBuyButton", EnsureActionButton(food, "ButtonGuildBuyFood", "Buy food"));
+            Set(ui, "sellButton", EnsureActionButton(sell, "ButtonGuildSell", "Sell"));
+
+            TMP_Text foodQty = Text(food, "PanelBerapabanyakaygdiberli/Berapabanyakaygdiberli");
+            if (foodQty == null) foodQty = FindByName(food, "Berapabanyakaygdiberli")?.GetComponent<TMP_Text>();
+            if (foodQty == null)
+            {
+                foodQty = MakeText(food, "FoodQty", "0", 20f, TextAlignmentOptions.Center,
+                    new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(16f, 40f), new Vector2(-16f, 72f));
+            }
+            Set(ui, "foodQty", foodQty);
+            Set(ui, "mealpackHave", Text(food, "PanelMealPack/HowMuch(YouHave)"));
+            Set(ui, "foodPrice", Text(food, "PanelMealPack/Price Each (1)"));
+
+            TMP_Text buyTotal = Text(buy, "berapabanyakuangygakandiperukan/Text (TMP)");
+            if (buyTotal == null)
+            {
+                buyTotal = MakeText(buy, "BuyTotal", "-0", 20f, TextAlignmentOptions.MidlineRight,
+                    new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(16f, 8f), new Vector2(-16f, 34f));
+            }
+            Set(ui, "buyTotal", buyTotal);
+
+            TMP_Text sellTotal = Text(sell, "berapabanyakygkitadapat/Text (TMP)");
+            if (sellTotal == null)
+            {
+                sellTotal = MakeText(sell, "SellTotal", "+0", 20f, TextAlignmentOptions.MidlineRight,
+                    new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(16f, 8f), new Vector2(-16f, 34f));
+            }
+            Set(ui, "sellTotal", sellTotal);
+            Set(ui, "selectAllButton", Button(buy, "ButtonSelectAll"));
+            Set(ui, "deselectAllButton", Button(buy, "ButtonDeselectAll"));
+            SetArray(ui, "buyRows", buys);
+            SetArray(ui, "sellRows", sells);
+
+            LocationUI location = canvas.GetComponent<LocationUI>();
+            if (location == null) location = canvas.gameObject.AddComponent<LocationUI>();
+            Set(location, "stall", ui);
+            Set(location, "endDayButton", Button(canvas, "ButtonEndDay"));
+            Set(location, "journalButton", Button(canvas, "ButtonJournal"));
+            Set(location, "townButton", Button(canvas, "ButtonTown"));
+            Set(location, "seeTownButton", Button(canvas, "PanelBuatMilihTempat/ButtonSeeTheWholeTown"));
+            Set(location, "homeButton", Button(canvas, "PanelBuatMilihTempat/ButtonHome and Shop"));
+            Set(location, "bulkLotsButton", Button(stall, "ButtonBulkLots"));
+            Set(location, "lessonsButton", Button(stall, "ButtonLessons"));
+            Set(location, "questBoardButton", Button(canvas, "PanelBuatMilihTempat/ButtonQuestBoard"));
+
+            if (buy != null) buy.gameObject.SetActive(true);
+            if (food != null) food.gameObject.SetActive(false);
+            if (sell != null) sell.gameObject.SetActive(false);
+            stall.gameObject.SetActive(false);
+            Debug.Log("[Setup] guild stall wired (" + buys.Length + " buy, " + sells.Length + " sell)");
+        }
+
+        /// <summary>
+        /// Bedroom, Home and Shop, dan Crafting Room: pasang aksi untuk tombol
+        /// navigasi, panel istirahat/makan, dan stasiun crafting yang sudah ada.
+        /// </summary>
+        private static void SetupLocationUI(string sceneName)
+        {
+            Transform canvas = FindRoot("Canvas");
+            if (canvas == null) return;
+
+            LocationUI ui = canvas.GetComponent<LocationUI>();
+            if (ui == null) ui = canvas.gameObject.AddComponent<LocationUI>();
+
+            Set(ui, "endDayButton", Button(canvas, "ButtonEndDay"));
+            Set(ui, "journalButton", Button(canvas, "ButtonJournal"));
+            Set(ui, "townButton", Button(canvas, "ButtonTown"));
+            Set(ui, "closeButton", Button(canvas, "ButtonClose"));
+
+            if (sceneName == "Bedroom")
+            {
+                Transform rest = Find(canvas, "PanelRest");
+                Set(ui, "restPanel", rest != null ? rest.gameObject : null);
+                Set(ui, "eatPanel", Find(rest, "PanelEataMeal")?.gameObject);
+                Set(ui, "shortBreakPanel", Find(rest, "PanelShortBreak")?.gameObject);
+                Set(ui, "sleepPanel", Find(rest, "PanelSleep")?.gameObject);
+                Set(ui, "restButton", Button(canvas, "PanelBuatMilihTempat/ButtonRest"));
+                Set(ui, "eatButton", Button(rest, "PanelEataMeal/ButtonEataMeal"));
+                Set(ui, "shortBreakButton", Button(rest, "PanelShortBreak/ButtonShortBreak"));
+                Set(ui, "sleepButton", Button(rest, "PanelSleep/ButtonSleep"));
+                Set(ui, "closeButton", Button(rest, "ButtonClose"));
+                Set(ui, "craftingButton", Button(canvas, "PanelBuatMilihTempat/ButtonCraftingRoom"));
+                Set(ui, "homeButton", Button(canvas, "PanelBuatMilihTempat/ButtonHome and Shop"));
+                if (rest != null) rest.gameObject.SetActive(false);
+            }
+            else if (sceneName == "ShopdanRumah")
+            {
+                Transform shopRoot = Find(canvas, "PanelShopShelf");
+                GameObject shop = shopRoot != null ? shopRoot.gameObject : null;
+                GameObject products = Find(shopRoot, "PanelProductingindijual")?.gameObject;
+                GameObject shelf = Find(shopRoot, "PanelShelfSpace")?.gameObject;
+                Set(ui, "shopPanel", shop);
+                Set(ui, "productPanel", products);
+                Set(ui, "shelfPanel", shelf);
+                Set(ui, "shopButton", Button(canvas, "PanelBuatMilihTempat/ButtonShop"));
+                Set(ui, "openShopButton", Button(shopRoot, "ButtonOpentheShop"));
+                Set(ui, "closeButton", Button(shopRoot, "ButtonClose"));
+                Set(ui, "craftingButton", Button(canvas, "PanelBuatMilihTempat/ButtonCraftingRoom"));
+                if (shop != null) shop.SetActive(false);
+                if (products != null) products.SetActive(false);
+                if (shelf != null) shelf.SetActive(false);
+            }
+            else if (sceneName == "CraftingRoom")
+            {
+                Transform shopRoot = Find(canvas, "PanelShopShelf");
+                Transform productsRoot = Find(shopRoot, "PanelProductingindijual");
+                Transform shelfRoot = Find(shopRoot, "PanelShelfSpace");
+                GameObject shop = shopRoot != null ? shopRoot.gameObject : null;
+                GameObject products = productsRoot != null ? productsRoot.gameObject : null;
+                GameObject shelf = shelfRoot != null ? shelfRoot.gameObject : null;
+                Set(ui, "shopPanel", shop);
+                Set(ui, "productPanel", products);
+                Set(ui, "shelfPanel", shelf);
+                Set(ui, "shopButton", Button(shopRoot, "ButtonOpentheShop"));
+                Set(ui, "closeButton", Button(shopRoot, "ButtonClose"));
+                Set(ui, "grindingButton", Button(canvas, "PanelBuatMilihTempat/ButtonGrindingTable"));
+                Set(ui, "dryingButton", Button(canvas, "PanelBuatMilihTempat/ButtonDryingRack"));
+                Set(ui, "craftingTableButton", Button(canvas, "PanelBuatMilihTempat/ButtonCraftingTable"));
+                Set(ui, "homeButton", Button(canvas, "PanelBuatMilihTempat/ButtonHouse&Shop"));
+                if (products != null) products.SetActive(false);
+                if (shelf != null) shelf.SetActive(false);
+            }
+
+            HideLocationPanels(canvas, sceneName);
+            Debug.Log("[Setup] location UI wired for " + sceneName);
+        }
+
+        private static void HideLocationPanels(Transform canvas, string sceneName)
+        {
+            string[] names = sceneName == "Bedroom"
+                ? new[] { "PanelRest" }
+                : new[] { "PanelShopShelf", "PanelProductingindijual", "PanelShelfSpace" };
+
+            foreach (string name in names)
+            {
+                Transform panel = Find(canvas, name);
+                if (panel != null) panel.gameObject.SetActive(false);
+            }
         }
 
         private static void SetupOutskirt()
@@ -856,6 +1073,42 @@ namespace BloomLunas.EditorTools
             button.targetGraphic = image;
 
             TMP_Text text = MakeText(rect, "Label", label, 24f, TextAlignmentOptions.Center,
+                Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            text.raycastTarget = false;
+            return button;
+        }
+
+        /// <summary>Tombol aksi kecil di bawah panel (dipakai Guild).</summary>
+        private static Button EnsureActionButton(Transform parent, string name, string label)
+        {
+            if (parent == null) return null;
+
+            Transform existing = Find(parent, name);
+            if (existing != null) return existing.GetComponent<Button>();
+
+            GameObject obj = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            RectTransform rect = obj.GetComponent<RectTransform>();
+            rect.SetParent(parent, false);
+            rect.anchorMin = new Vector2(0.5f, 0f);
+            rect.anchorMax = new Vector2(0.5f, 0f);
+            rect.pivot = new Vector2(0.5f, 0f);
+            rect.sizeDelta = new Vector2(150f, 40f);
+            rect.anchoredPosition = new Vector2(0f, 14f);
+
+            Sprite sprite = null;
+            Transform template = Find(parent, "Button+");
+            Image templateImage = template != null ? template.GetComponent<Image>() : null;
+            if (templateImage != null) sprite = templateImage.sprite;
+
+            Image image = obj.GetComponent<Image>();
+            image.sprite = sprite;
+            image.type = sprite != null ? Image.Type.Sliced : Image.Type.Simple;
+            image.color = Color.white;
+
+            Button button = obj.GetComponent<Button>();
+            button.targetGraphic = image;
+
+            TMP_Text text = MakeText(rect, "Label", label, 22f, TextAlignmentOptions.Center,
                 Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             text.raycastTarget = false;
             return button;

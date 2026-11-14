@@ -19,6 +19,8 @@ public class MarketStallUI : MonoBehaviour
     [SerializeField] private Button closeButton;
 
     [Header("Tab")]
+    [Tooltip("Guild menampilkan semua panel sekaligus, jadi tab tidak menyembunyikan panel.")]
+    [SerializeField] private bool singlePanelTabs = true;
     [SerializeField] private Button tabBuy;
     [SerializeField] private Button tabFood;
     [SerializeField] private Button tabSell;
@@ -149,10 +151,24 @@ public class MarketStallUI : MonoBehaviour
 
     private void ShowTab(int index)
     {
-        if (buyPanel != null) buyPanel.SetActive(index == 0);
-        if (foodPanel != null) foodPanel.SetActive(index == 1);
-        if (sellPanel != null) sellPanel.SetActive(index == 2);
+        if (singlePanelTabs)
+        {
+            if (buyPanel != null) buyPanel.SetActive(index == 0);
+            if (foodPanel != null) foodPanel.SetActive(index == 1);
+            if (sellPanel != null) sellPanel.SetActive(index == 2);
+        }
         Refresh();
+    }
+
+    /// <summary>Guild "Bulk lots": isi semua baris beli dengan jumlah yang sama.</summary>
+    public void FillBuy(int qty)
+    {
+        if (buyRows == null) return;
+        for (int i = 0; i < buyRows.Length; i++)
+        {
+            if (buyRows[i] != null) buyRows[i].SetQty(Mathf.Max(0, qty));
+        }
+        RefreshBuy();
     }
 
     // ---------------------------------------------------------------
