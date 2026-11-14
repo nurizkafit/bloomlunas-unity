@@ -796,8 +796,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 240 G
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 593432b8a18421148869f1c512a14cc6, type: 2}
-  m_sharedMaterial: {fileID: 7359404644832332893, guid: 593432b8a18421148869f1c512a14cc6, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11f0434a02233bb4c96efbb51bf54d73, type: 2}
+  m_sharedMaterial: {fileID: 5687235179978430714, guid: 11f0434a02233bb4c96efbb51bf54d73, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1946,8 +1946,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 240 G
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 593432b8a18421148869f1c512a14cc6, type: 2}
-  m_sharedMaterial: {fileID: 7359404644832332893, guid: 593432b8a18421148869f1c512a14cc6, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11f0434a02233bb4c96efbb51bf54d73, type: 2}
+  m_sharedMaterial: {fileID: 5687235179978430714, guid: 11f0434a02233bb4c96efbb51bf54d73, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2966,8 +2966,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: New Text
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 593432b8a18421148869f1c512a14cc6, type: 2}
-  m_sharedMaterial: {fileID: 7359404644832332893, guid: 593432b8a18421148869f1c512a14cc6, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11f0434a02233bb4c96efbb51bf54d73, type: 2}
+  m_sharedMaterial: {fileID: 5687235179978430714, guid: 11f0434a02233bb4c96efbb51bf54d73, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -3178,8 +3178,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 6
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 593432b8a18421148869f1c512a14cc6, type: 2}
-  m_sharedMaterial: {fileID: 7359404644832332893, guid: 593432b8a18421148869f1c512a14cc6, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11f0434a02233bb4c96efbb51bf54d73, type: 2}
+  m_sharedMaterial: {fileID: 5687235179978430714, guid: 11f0434a02233bb4c96efbb51bf54d73, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -3487,8 +3487,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Journal
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 593432b8a18421148869f1c512a14cc6, type: 2}
-  m_sharedMaterial: {fileID: 7359404644832332893, guid: 593432b8a18421148869f1c512a14cc6, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11f0434a02233bb4c96efbb51bf54d73, type: 2}
+  m_sharedMaterial: {fileID: 5687235179978430714, guid: 11f0434a02233bb4c96efbb51bf54d73, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -6144,8 +6144,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Town
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 593432b8a18421148869f1c512a14cc6, type: 2}
-  m_sharedMaterial: {fileID: 7359404644832332893, guid: 593432b8a18421148869f1c512a14cc6, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11f0434a02233bb4c96efbb51bf54d73, type: 2}
+  m_sharedMaterial: {fileID: 5687235179978430714, guid: 11f0434a02233bb4c96efbb51bf54d73, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -6479,8 +6479,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 27
-  m_fontSizeBase: 27
+  m_fontSize: 38
+  m_fontSizeBase: 38
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -7059,8 +7059,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Shop Shelf
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 593432b8a18421148869f1c512a14cc6, type: 2}
-  m_sharedMaterial: {fileID: 7359404644832332893, guid: 593432b8a18421148869f1c512a14cc6, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11f0434a02233bb4c96efbb51bf54d73, type: 2}
+  m_sharedMaterial: {fileID: 5687235179978430714, guid: 11f0434a02233bb4c96efbb51bf54d73, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -7428,7 +7428,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1734730232
 RectTransform:
   m_ObjectHideFlags: 0
