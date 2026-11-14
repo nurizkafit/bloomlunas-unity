@@ -458,7 +458,7 @@ namespace BloomLunas.EditorTools
             Transform herbParent = Find(gameplay, "PanelHerbsOutHere");
             Transform basketParent = Find(gameplay, "PanelInyourBasket");
 
-            Transform herbRows = EnsureRows(herbParent, "Rows", 52f, 34f);
+            Transform herbRows = EnsureRows(herbParent, "Rows", SpotData.GetLength(0), 36f);
             GatherSpotRow[] spots = new GatherSpotRow[SpotData.GetLength(0)];
             for (int i = 0; i < spots.Length; i++)
             {
@@ -469,15 +469,15 @@ namespace BloomLunas.EditorTools
                 rect.anchorMin = new Vector2(0f, 1f);
                 rect.anchorMax = new Vector2(1f, 1f);
                 rect.pivot = new Vector2(0.5f, 1f);
-                rect.sizeDelta = new Vector2(0f, 34f);
-                rect.anchoredPosition = new Vector2(0f, -i * 34f);
+                rect.sizeDelta = new Vector2(0f, 36f);
+                rect.anchoredPosition = new Vector2(0f, -i * 36f);
 
                 TMP_Text label = MakeText(row.transform, "Name", SpotData[i, 1], 20f,
-                    TextAlignmentOptions.MidlineLeft, new Vector2(0f, 0f), new Vector2(1f, 1f),
-                    new Vector2(6f, 0f), new Vector2(-70f, 0f));
-                TMP_Text time = MakeText(row.transform, "Time", "", 18f,
-                    TextAlignmentOptions.MidlineRight, new Vector2(1f, 0f), new Vector2(1f, 1f),
-                    new Vector2(-64f, 0f), new Vector2(-6f, 0f));
+                    TextAlignmentOptions.MidlineLeft, new Vector2(0.5f, 0f), new Vector2(0.5f, 1f),
+                    new Vector2(-280f, 0f), new Vector2(60f, 0f));
+                TMP_Text time = MakeText(row.transform, "Time", "", 19f,
+                    TextAlignmentOptions.MidlineRight, new Vector2(0.5f, 0f), new Vector2(0.5f, 1f),
+                    new Vector2(200f, 0f), new Vector2(274f, 0f));
 
                 GatherSpotRow view = row.GetComponent<GatherSpotRow>();
                 Set(view, "nameLabel", label);
@@ -490,7 +490,7 @@ namespace BloomLunas.EditorTools
                 spots[i] = view;
             }
 
-            Transform basketRows = EnsureRows(basketParent, "Rows", 52f, 30f);
+            Transform basketRows = EnsureRows(basketParent, "Rows", SpotData.GetLength(0), 34f);
             BasketRowView[] rows = new BasketRowView[spots.Length];
             for (int i = 0; i < spots.Length; i++)
             {
@@ -500,15 +500,15 @@ namespace BloomLunas.EditorTools
                 rect.anchorMin = new Vector2(0f, 1f);
                 rect.anchorMax = new Vector2(1f, 1f);
                 rect.pivot = new Vector2(0.5f, 1f);
-                rect.sizeDelta = new Vector2(0f, 30f);
-                rect.anchoredPosition = new Vector2(0f, -i * 30f);
+                rect.sizeDelta = new Vector2(0f, 34f);
+                rect.anchoredPosition = new Vector2(0f, -i * 34f);
 
-                TMP_Text label = MakeText(row.transform, "Name", SpotData[i, 1], 18f,
-                    TextAlignmentOptions.MidlineLeft, Vector2.zero, Vector2.one,
-                    new Vector2(6f, 0f), new Vector2(-50f, 0f));
-                TMP_Text count = MakeText(row.transform, "Count", "x0", 18f,
-                    TextAlignmentOptions.MidlineRight, new Vector2(1f, 0f), new Vector2(1f, 1f),
-                    new Vector2(-46f, 0f), new Vector2(-6f, 0f));
+                TMP_Text label = MakeText(row.transform, "Name", SpotData[i, 1], 19f,
+                    TextAlignmentOptions.MidlineLeft, new Vector2(0.5f, 0f), new Vector2(0.5f, 1f),
+                    new Vector2(-280f, 0f), new Vector2(60f, 0f));
+                TMP_Text count = MakeText(row.transform, "Count", "x0", 19f,
+                    TextAlignmentOptions.MidlineRight, new Vector2(0.5f, 0f), new Vector2(0.5f, 1f),
+                    new Vector2(220f, 0f), new Vector2(280f, 0f));
 
                 BasketRowView view = row.GetComponent<BasketRowView>();
                 Set(view, "nameLabel", label);
@@ -522,7 +522,7 @@ namespace BloomLunas.EditorTools
             TMP_Text basketCount = Find(basketParent, "BasketCount")?.GetComponent<TMP_Text>();
             if (basketCount == null)
             {
-                basketCount = MakeText(basketParent, "BasketCount", "0/5", 18f,
+                basketCount = MakeText(basketParent, "BasketCount", "0/5", 19f,
                     TextAlignmentOptions.MidlineRight, new Vector2(1f, 1f), new Vector2(1f, 1f),
                     new Vector2(-80f, -38f), new Vector2(-10f, -12f));
             }
@@ -530,7 +530,7 @@ namespace BloomLunas.EditorTools
             TMP_Text amount = Find(found, "Amount")?.GetComponent<TMP_Text>();
             if (amount == null)
             {
-                amount = MakeText(found, "Amount", "", 16f, TextAlignmentOptions.TopLeft,
+                amount = MakeText(found, "Amount", "", 18f, TextAlignmentOptions.TopLeft,
                     new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(18f, -86f), new Vector2(-18f, -58f));
             }
 
@@ -594,14 +594,14 @@ namespace BloomLunas.EditorTools
             if (oldMinus != null) oldMinus.gameObject.SetActive(false);
             if (oldPlus != null) oldPlus.gameObject.SetActive(false);
 
-            Transform buyRows = EnsureRows(buy, "Rows", 58f, 32f);
+            Transform buyRows = EnsureRows(buy, "Rows", BuyData.GetLength(0), 36f);
             MarketRowView[] buys = new MarketRowView[BuyData.GetLength(0)];
             for (int i = 0; i < buys.Length; i++)
             {
                 buys[i] = MakeMarketRow(buyRows, "Buy_" + BuyData[i, 0], BuyData[i, 0], BuyData[i, 1], false, i);
             }
 
-            Transform sellRows = EnsureRows(sell, "Rows", 58f, 32f);
+            Transform sellRows = EnsureRows(sell, "Rows", SellData.GetLength(0), 36f);
             MarketRowView[] sells = new MarketRowView[SellData.GetLength(0)];
             for (int i = 0; i < sells.Length; i++)
             {
@@ -611,14 +611,14 @@ namespace BloomLunas.EditorTools
             TMP_Text storeLeft = Find(buy, "StoreLeft")?.GetComponent<TMP_Text>();
             if (storeLeft == null)
             {
-                storeLeft = MakeText(buy, "StoreLeft", "Store jar left", 16f, TextAlignmentOptions.MidlineLeft,
+                storeLeft = MakeText(buy, "StoreLeft", "Store jar left", 18f, TextAlignmentOptions.MidlineLeft,
                     new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(16f, -34f), new Vector2(-16f, -10f));
             }
 
             TMP_Text personalLeft = Find(food, "PersonalLeft")?.GetComponent<TMP_Text>();
             if (personalLeft == null)
             {
-                personalLeft = MakeText(food, "PersonalLeft", "Personal jar left", 16f, TextAlignmentOptions.MidlineLeft,
+                personalLeft = MakeText(food, "PersonalLeft", "Personal jar left", 18f, TextAlignmentOptions.MidlineLeft,
                     new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(16f, 10f), new Vector2(-16f, 34f));
             }
 
@@ -672,24 +672,35 @@ namespace BloomLunas.EditorTools
             rect.anchorMin = new Vector2(0f, 1f);
             rect.anchorMax = new Vector2(1f, 1f);
             rect.pivot = new Vector2(0.5f, 1f);
-            rect.sizeDelta = new Vector2(0f, 32f);
-            rect.anchoredPosition = new Vector2(0f, -index * 32f);
+            rect.sizeDelta = new Vector2(0f, 36f);
+            rect.anchoredPosition = new Vector2(0f, -index * 36f);
 
-            TMP_Text nameText = MakeText(row.transform, "Name", label, 18f,
-                TextAlignmentOptions.MidlineLeft, Vector2.zero, Vector2.one,
-                new Vector2(6f, 0f), new Vector2(-204f, 0f));
-            TMP_Text eachText = MakeText(row.transform, "Each", "-", 18f,
-                TextAlignmentOptions.MidlineRight, new Vector2(1f, 0f), new Vector2(1f, 1f),
-                new Vector2(-200f, 0f), new Vector2(-150f, 0f));
-            TMP_Text haveText = MakeText(row.transform, "Have", "0", 18f,
-                TextAlignmentOptions.MidlineRight, new Vector2(1f, 0f), new Vector2(1f, 1f),
-                new Vector2(-146f, 0f), new Vector2(-106f, 0f));
-            TMP_Text qtyText = MakeText(row.transform, "Qty", "0", 18f,
-                TextAlignmentOptions.MidlineRight, new Vector2(1f, 0f), new Vector2(1f, 1f),
-                new Vector2(-102f, 0f), new Vector2(-66f, 0f));
+            // Kolom mengikuti header panel buatan user (Each x=-43, Have x=82,
+            // Qty x=294) supaya angka tidak tumpang tindih dengan header.
+            float eachX = product ? 107f : -43f;
+            float spareX = product ? -50f : 82f;
+            float spareWidth = product ? 78f : 63f;
 
-            Button minus = MakeSmallButton(row.transform, "Minus", "-", -62f);
-            Button plus = MakeSmallButton(row.transform, "Plus", "+", -30f);
+            TMP_Text nameText = MakeText(row.transform, "Name", label, 20f,
+                TextAlignmentOptions.MidlineLeft, new Vector2(0.5f, 0f), new Vector2(0.5f, 1f),
+                new Vector2(-360f, 0f), new Vector2(-120f, 0f));
+            TMP_Text eachText = MakeText(row.transform, "Each", "-", 19f,
+                TextAlignmentOptions.MidlineRight, new Vector2(0.5f, 0f), new Vector2(0.5f, 1f),
+                new Vector2(eachX - 31.5f, 0f), new Vector2(eachX + 31.5f, 0f));
+            TMP_Text haveText = MakeText(row.transform, "Have", "0", 19f,
+                TextAlignmentOptions.MidlineRight, new Vector2(0.5f, 0f), new Vector2(0.5f, 1f),
+                new Vector2(spareX - spareWidth * 0.5f, 0f), new Vector2(spareX + spareWidth * 0.5f, 0f));
+            TMP_Text qtyText = MakeText(row.transform, "Qty", "0", 19f,
+                TextAlignmentOptions.MidlineRight, new Vector2(0.5f, 0f), new Vector2(0.5f, 1f),
+                new Vector2(266f, 0f), new Vector2(322f, 0f));
+
+            Sprite sprite = null;
+            Transform template = parent != null ? parent.Find("Button+") : null;
+            Image templateImage = template != null ? template.GetComponent<Image>() : null;
+            if (templateImage != null) sprite = templateImage.sprite;
+
+            Button minus = MakeSmallButton(row.transform, "Minus", "-", 340f, sprite);
+            Button plus = MakeSmallButton(row.transform, "Plus", "+", 377f, sprite);
 
             MarketRowView view = row.GetComponent<MarketRowView>();
             Set(view, "nameLabel", nameText);
@@ -705,24 +716,26 @@ namespace BloomLunas.EditorTools
             return view;
         }
 
-        private static Button MakeSmallButton(Transform parent, string name, string label, float x)
+        private static Button MakeSmallButton(Transform parent, string name, string label, float x, Sprite sprite)
         {
             GameObject obj = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
             RectTransform rect = obj.GetComponent<RectTransform>();
             rect.SetParent(parent, false);
-            rect.anchorMin = new Vector2(1f, 0.5f);
-            rect.anchorMax = new Vector2(1f, 0.5f);
-            rect.pivot = new Vector2(1f, 0.5f);
-            rect.sizeDelta = new Vector2(28f, 28f);
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.sizeDelta = new Vector2(34f, 34f);
             rect.anchoredPosition = new Vector2(x, 0f);
 
             Image image = obj.GetComponent<Image>();
-            image.color = new Color(1f, 1f, 1f, 0.9f);
+            image.sprite = sprite;
+            image.type = sprite != null ? Image.Type.Sliced : Image.Type.Simple;
+            image.color = Color.white;
 
             Button button = obj.GetComponent<Button>();
             button.targetGraphic = image;
 
-            TMP_Text text = MakeText(rect, "Label", label, 20f, TextAlignmentOptions.Center,
+            TMP_Text text = MakeText(rect, "Label", label, 24f, TextAlignmentOptions.Center,
                 Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             text.raycastTarget = false;
             return button;
@@ -756,9 +769,18 @@ namespace BloomLunas.EditorTools
             return button;
         }
 
-        private static Transform EnsureRows(Transform parent, string name, float topOffset, float rowHeight)
+        private static Transform EnsureRows(Transform parent, string name, int count, float rowHeight)
         {
             if (parent == null) return null;
+
+            // Baris mulai tepat di bawah header panel (header di-anchor tengah),
+            // jadi posisinya tidak bergantung tinggi panel dan tidak menabrak header.
+            float topY = 160f;
+            RectTransform headerRect = parent.Find("Image") as RectTransform;
+            if (headerRect != null)
+            {
+                topY = headerRect.anchoredPosition.y - headerRect.sizeDelta.y * 0.5f - 10f;
+            }
 
             Transform existing = Find(parent, name);
             if (existing != null)
@@ -767,17 +789,25 @@ namespace BloomLunas.EditorTools
                 {
                     Object.DestroyImmediate(existing.GetChild(i).gameObject);
                 }
+                ConfigureRowArea(existing as RectTransform, topY, count * rowHeight);
                 return existing;
             }
 
             GameObject rows = new GameObject(name, typeof(RectTransform));
             RectTransform rect = rows.GetComponent<RectTransform>();
             rect.SetParent(parent, false);
-            rect.anchorMin = new Vector2(0f, 0f);
-            rect.anchorMax = new Vector2(1f, 1f);
-            rect.offsetMin = new Vector2(16f, 12f);
-            rect.offsetMax = new Vector2(-16f, -topOffset);
+            ConfigureRowArea(rect, topY, count * rowHeight);
             return rows.transform;
+        }
+
+        private static void ConfigureRowArea(RectTransform rect, float topY, float height)
+        {
+            if (rect == null) return;
+            rect.anchorMin = new Vector2(0f, 0.5f);
+            rect.anchorMax = new Vector2(1f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.anchoredPosition = new Vector2(0f, topY);
+            rect.sizeDelta = new Vector2(-32f, height + 4f);
         }
 
         private static TMP_Text MakeText(Transform parent, string name, string value, float size,
