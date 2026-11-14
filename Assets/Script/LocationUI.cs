@@ -43,6 +43,8 @@ public class LocationUI : MonoBehaviour
     [SerializeField] private Button shortBreakButton;
     [SerializeField] private Button sleepButton;
     [SerializeField] private Button closeButton;
+    [Tooltip("Teks umpan balik di panel (mis. hasil makan/istirahat).")]
+    [SerializeField] private TMP_Text feedbackLabel;
 
     [Header("Home and Shop")]
     [SerializeField] private Button shopButton;
@@ -138,6 +140,7 @@ public class LocationUI : MonoBehaviour
 
     private void HidePanels()
     {
+        SetFeedback("");
         if (restPanel != null) restPanel.SetActive(false);
         if (eatPanel != null) eatPanel.SetActive(false);
         if (shortBreakPanel != null) shortBreakPanel.SetActive(false);
@@ -150,7 +153,19 @@ public class LocationUI : MonoBehaviour
     private void OpenRest()
     {
         HidePanels();
+        SetFeedback("");
         if (restPanel != null) restPanel.SetActive(true);
+    }
+
+    private void SetFeedback(string message)
+    {
+        if (feedbackLabel != null) feedbackLabel.text = message;
+    }
+
+    private string EnergyText()
+    {
+        if (coreLoop == null) return "";
+        return "Energy " + coreLoop.Energy + "/" + coreLoop.MaxEnergy;
     }
 
     private void OpenShopShelf()
@@ -170,28 +185,50 @@ public class LocationUI : MonoBehaviour
     // jadi tombol pembukanya langsung menjalankan aksinya.
     public void EatMeal()
     {
-        if (book == null || coreLoop == null) return;
-        if (book.GetAmount("meal_pack") <= 0) return;
+        if (book == null || coreLoop == null)
+        {
+            SetFeedback("Game data is not loaded.");
+            return;
+        }
+
+        if (book.GetAmount("meal_pack") <= 0)
+        {
+            SetFeedback("No meal packs left. Buy food at the market first.");
+            return;
+        }
 
         book.AddInventory("meal_pack", "Meal pack", -1, false);
         coreLoop.RestoreEnergy(mealEnergy);
-        HidePanels();
+        SetFeedback("Ate 1 meal pack. " + EnergyText() +
+                    " - " + book.GetAmount("meal_pack") + " pack(s) left.");
     }
 
     public void TakeShortBreak()
     {
-        if (coreLoop == null) return;
+        if (coreLoop == null)
+        {
+            SetFeedback("Game data is not loaded.");
+            return;
+        }
+
         coreLoop.SpendTime(breakMinutes, 0);
         coreLoop.RestoreEnergy(breakEnergy);
-        HidePanels();
+        SetFeedback("Short break: +" + breakEnergy + " energy. " + EnergyText() +
+                    " - now " + coreLoop.ClockText + ".");
     }
 
     public void TakeRest()
     {
-        if (coreLoop == null) return;
+        if (coreLoop == null)
+        {
+            SetFeedback("Game data is not loaded.");
+            return;
+        }
+
         coreLoop.SpendTime(restMinutes, 0);
         coreLoop.RestoreEnergy(restEnergy);
-        HidePanels();
+        SetFeedback("Rested: +" + restEnergy + " energy. " + EnergyText() +
+                    " - now " + coreLoop.ClockText + ".");
     }
 
     // ---------------------------------------------------------------

@@ -16322,8 +16322,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 606.897, y: -217.90527}
-  m_SizeDelta: {x: 475.7102, y: 110.49}
+  m_AnchoredPosition: {x: 0, y: -320}
+  m_SizeDelta: {x: 220, y: 44}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1146552647
 MonoBehaviour:
@@ -21423,8 +21423,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 606.897, y: -217.90527}
-  m_SizeDelta: {x: 475.7102, y: 110.49}
+  m_AnchoredPosition: {x: 0, y: -320}
+  m_SizeDelta: {x: 220, y: 44}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1436639086
 MonoBehaviour:
@@ -26693,6 +26693,7 @@ MonoBehaviour:
   shortBreakButton: {fileID: 0}
   sleepButton: {fileID: 0}
   closeButton: {fileID: 0}
+  feedbackLabel: {fileID: 0}
   shopButton: {fileID: 0}
   openShopButton: {fileID: 0}
   grindingButton: {fileID: 0}

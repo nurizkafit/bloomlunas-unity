@@ -1234,6 +1234,7 @@ MonoBehaviour:
   shortBreakButton: {fileID: 0}
   sleepButton: {fileID: 0}
   closeButton: {fileID: 1085004308}
+  feedbackLabel: {fileID: 0}
   shopButton: {fileID: 87070897}
   openShopButton: {fileID: 0}
   grindingButton: {fileID: 305767421}

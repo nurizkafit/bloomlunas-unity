@@ -665,6 +665,11 @@ namespace BloomLunas.EditorTools
 
             RemoveOldGuildButtons(stall);
 
+            // Tombol Buy/Sell besar di dalam panel menutupi baris; pindahkan ke
+            // bawah baris terakhir (baris berakhir sekitar y=-288).
+            MoveGuildActionButton(buy, "ButtonSell");
+            MoveGuildActionButton(sell, "ButtonSell");
+
             // Sisakan pita di atas untuk tab, supaya tab tidak menimpa baris pertama.
             // Marker mencegah penyusutan berulang setiap kali setup dijalankan.
             if (Find(stall, "GuildTabStrip") == null)
@@ -702,6 +707,14 @@ namespace BloomLunas.EditorTools
             {
                 Transform rest = Find(canvas, "PanelRest");
                 Set(ui, "restPanel", rest != null ? rest.gameObject : null);
+
+                TMP_Text feedback = Find(rest, "ActionFeedback")?.GetComponent<TMP_Text>();
+                if (feedback == null)
+                {
+                    feedback = MakeText(rest, "ActionFeedback", "", 20f, TextAlignmentOptions.Center,
+                        new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(28f, 14f), new Vector2(-28f, 58f));
+                }
+                Set(ui, "feedbackLabel", feedback);
                 Set(ui, "eatPanel", Find(rest, "PanelEataMeal")?.gameObject);
                 Set(ui, "shortBreakPanel", Find(rest, "PanelShortBreak")?.gameObject);
                 Set(ui, "sleepPanel", Find(rest, "PanelSleep")?.gameObject);
@@ -754,6 +767,17 @@ namespace BloomLunas.EditorTools
 
             HideLocationPanels(canvas, sceneName);
             Debug.Log("[Setup] location UI wired for " + sceneName);
+        }
+
+        private static void MoveGuildActionButton(Transform panel, string name)
+        {
+            Transform found = Find(panel, name);
+            if (found == null) return;
+
+            RectTransform rect = found as RectTransform;
+            if (rect == null) return;
+            rect.sizeDelta = new Vector2(220f, 44f);
+            rect.anchoredPosition = new Vector2(0f, -320f);
         }
 
         private static void ShrinkGuildPanels(Transform buy, Transform food, Transform sell, float topInset)
