@@ -56,6 +56,7 @@ namespace BloomLunas.EditorTools
                     SetupReviewModal();
                     ImprovePlannerReadability();
                     ImprovePlannerButtons();
+                    ImprovePlannerRowSpacing();
                 }
                 ApplyFonts(scene);
                 EditorSceneManager.MarkSceneDirty(scene);
@@ -187,6 +188,77 @@ namespace BloomLunas.EditorTools
             }
 
             Debug.Log("[Setup] planner text sizes raised");
+        }
+
+        /// <summary>
+        /// Tinggi baris halaman planner dinaikkan supaya tombol 42x40 tidak
+        /// menempel dengan baris di atas/bawahnya, dan jarak antar baris
+        /// (VerticalLayoutGroup) dilonggarkan.
+        /// </summary>
+        private static void ImprovePlannerRowSpacing()
+        {
+            Transform canvas = FindRoot("Canvas");
+            if (canvas == null) return;
+
+            Transform pages = Find(canvas, "PlannerBookUI/BookArea/PagesHost");
+            if (pages == null) pages = FindByName(canvas, "PagesHost");
+            if (pages == null) return;
+
+            foreach (VerticalLayoutGroup group in pages.GetComponentsInChildren<VerticalLayoutGroup>(true))
+            {
+                if (group.GetComponentInParent<PlannerPageView>(true) == null &&
+                    group.GetComponentInParent<PlannerPageBinder>(true) == null) continue;
+                group.spacing = 8f;
+            }
+
+            int rows = 0;
+            foreach (Transform child in pages.GetComponentsInChildren<Transform>(true))
+            {
+                if (!IsPlannerRow(child)) continue;
+
+                bool stacked = child.parent != null && child.parent.GetComponent<LayoutGroup>() != null;
+                float height = stacked ? 54f : 46f;
+
+                RectTransform rect = child as RectTransform;
+                if (rect != null) rect.sizeDelta = new Vector2(rect.sizeDelta.x, height);
+
+                LayoutElement element = child.GetComponent<LayoutElement>();
+                if (element == null) element = child.gameObject.AddComponent<LayoutElement>();
+                element.preferredHeight = height;
+                element.minHeight = height;
+                rows++;
+            }
+
+            Debug.Log("[Setup] planner row heights raised: " + rows);
+        }
+
+        private static bool IsPlannerRow(Transform target)
+        {
+            if (target == null) return false;
+            if (target.GetComponent<TMP_Text>() != null) return false;
+            if (target.name == "Page" || target.name == "Decor" || target.name == "Pages" ||
+                target.name == "PageContent" || target.name.StartsWith("Column") ||
+                target.name == "BookCover" || target.name == "LeftPage" || target.name == "RightPage") return false;
+
+            if (VisibleLabelCount(target) < 2) return false;
+
+            // Kalau ada anak yang juga punya >=2 label, ini container, bukan baris.
+            for (int i = 0; i < target.childCount; i++)
+            {
+                if (VisibleLabelCount(target.GetChild(i)) >= 2) return false;
+            }
+            return true;
+        }
+
+        private static int VisibleLabelCount(Transform target)
+        {
+            int count = 0;
+            foreach (TMP_Text label in target.GetComponentsInChildren<TMP_Text>(true))
+            {
+                if (label.GetComponentInParent<Button>() != null) continue;
+                count++;
+            }
+            return count;
         }
 
         /// <summary>
